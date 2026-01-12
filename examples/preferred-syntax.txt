@@ -1,0 +1,28 @@
+deck "Professor Demo"
+theme "default"
+title "SlideDeckML -> Slidev (Demo)"
+author "Student"
+transition "slide-left"
+
+slide "Cover" layout "cover" class "text-center"
+  # SlideDeckML DSL
+  External DSL (ANTLR) compiled into Slidev `slides.md`.
+
+slide "Agenda"
+  # Agenda
+  - What we generate (Slidev Markdown)
+  - DSL elements (text/list/code/math)
+  - Click steps (step -> v-click)
+
+slide "Steps" transition "slide-up"
+  # Steps / clicks
+  step 1 reveal "snippet"
+  step 2 reveal "explain"
+
+  code "java" id "snippet":
+    public static void main(String[] args) {
+      System.out.println("Hello Slidev");
+    }
+
+  text id "explain": This line appears on click 2.
+

@@ -1,0 +1,63 @@
+// SlideDeckML example DSL -> meant to compile to Slidev slides.md
+
+deck "Demo Deck" {
+  head {
+    theme "seriph";
+    title "Welcome to SlideDeckML";
+    author "You";
+    mdc true;
+
+    defaults {
+      transition slide-left;
+    }
+  }
+
+  template basic {
+    cssPath "./style.css";
+    assetsDir "./public";
+    logoPaths ["./public/logo.png"]; 
+  }
+
+  layout split {
+    kind STRUCTURED;
+    zones {
+      zone left { role LEFT; defaultOrder 1; }
+      zone right { role RIGHT; defaultOrder 2; }
+    }
+  }
+
+  slide intro {
+    layout cover;
+    class "text-center";
+    notes """<!-- Presenter note: greet audience -->""";
+
+    markdown """# Hello Slidev\n\nThis slide is generated from the DSL.""";
+  }
+
+  slot codeVariant;
+
+  slide code {
+    layout default;
+    transition fade;
+
+    element snippet {
+      type CodeBlock;
+      language "ts";
+      content """console.log('hello')\nconsole.log('world')\n""";
+      slotOf codeVariant;
+    }
+
+    step 1 {
+      reveal snippet;
+    }
+
+    // This is the domain-model's CodeReveal concept.
+    // Implementation detail when compiling to Slidev:
+    // - either emit multiple code blocks with line-highlighting
+    // - or wrap individual lines in v-click containers
+    step 2 {
+      codeReveal snippet 1..1;
+      switch codeVariant show snippet;
+    }
+  }
+}

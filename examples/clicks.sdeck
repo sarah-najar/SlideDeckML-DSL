@@ -1,0 +1,26 @@
+// Minimal example focusing on click steps
+
+deck "Clicks" {
+  head {
+    theme "seriph";
+    title "Click Demo";
+    defaults { transition fade; }
+  }
+
+  slide s1 {
+    markdown """# Step demo\n\nThese items reveal on clicks.""";
+
+    element a {
+      type TextBlock;
+      content "First revealed";
+    }
+
+    element b {
+      type TextBlock;
+      content "Second revealed";
+    }
+
+    step 1 { reveal a; }
+    step 2 { reveal b; }
+  }
+}

@@ -1,0 +1,248 @@
+package slidedeckml.compiler;
+
+import java.util.Map;
+
+import slidedeckml.grammar.SlideDeckMLBaseVisitor;
+import slidedeckml.grammar.SlideDeckMLParser;
+
+final class SlideDeckMLToModelVisitor extends SlideDeckMLBaseVisitor<Object> {
+
+  @Override
+  public Object visitFile(SlideDeckMLParser.FileContext ctx) {
+    return visit(ctx.deckDecl());
+  }
+
+  @Override
+  public Object visitDeckDecl(SlideDeckMLParser.DeckDeclContext ctx) {
+    Models.Deck deck = new Models.Deck();
+    deck.name = unquote(ctx.deckName.getText());
+
+    for (SlideDeckMLParser.DeckItemContext item : ctx.deckItem()) {
+      Object o = visit(item);
+      if (o instanceof Models.Slide) {
+        deck.slides.add((Models.Slide) o);
+      } else if (o instanceof Models.YamlMap) {
+        // head
+        Models.YamlMap head = (Models.YamlMap) o;
+        deck.head.values.putAll(head.values);
+      }
+    }
+
+    return deck;
+  }
+
+  @Override
+  public Object visitHeadDecl(SlideDeckMLParser.HeadDeclContext ctx) {
+    Models.YamlMap head = new Models.YamlMap();
+    for (SlideDeckMLParser.HeadPropContext p : ctx.headProp()) {
+      applyHeadProp(head, p);
+    }
+    return head;
+  }
+
+  private void applyHeadProp(Models.YamlMap head, SlideDeckMLParser.HeadPropContext p) {
+    if (p.getChildCount() == 0) return;
+
+    String key = p.getChild(0).getText();
+
+    if ("defaults".equals(key)) {
+      // Only compile a few slide defaults into headmatter for now.
+      for (SlideDeckMLParser.SlideFrontPropContext sp : p.slideFrontProp()) {
+        applySlideFrontPropToHeadDefaults(head, sp);
+      }
+      return;
+    }
+
+    SlideDeckMLParser.ValueContext v = p.value();
+    if (v == null) return;
+
+    head.put(key, valueToScalar(v));
+  }
+
+  private void applySlideFrontPropToHeadDefaults(Models.YamlMap head, SlideDeckMLParser.SlideFrontPropContext sp) {
+    String key = sp.getChild(0).getText();
+    if ("transition".equals(key)) {
+      Models.Transition t = parseTransition(sp.transitionValue());
+      if (t != null) {
+        if (t.isObject()) head.put("transition", t.objectProps);
+        else {
+          String s = t.name;
+          if (t.backwardName != null) s = s + " | " + t.backwardName;
+          head.put("transition", s);
+        }
+      }
+    }
+  }
+
+  @Override
+  public Object visitSlideDecl(SlideDeckMLParser.SlideDeclContext ctx) {
+    Models.Slide slide = new Models.Slide();
+    slide.id = ctx.slideId == null ? null : ctx.slideId.getText();
+
+    for (SlideDeckMLParser.SlideFrontPropContext p : ctx.slideFrontProp()) {
+      applySlideFrontProp(slide, p);
+    }
+
+    for (SlideDeckMLParser.SlideBodyItemContext item : ctx.slideBodyItem()) {
+      Object o = visit(item);
+      if (o instanceof Models.Item) {
+        slide.items.add((Models.Item) o);
+      } else if (o instanceof StepInfo) {
+        StepInfo si = (StepInfo) o;
+        for (String eid : si.revealIds) {
+          slide.revealAtByElementId.put(eid, si.stepIndex);
+        }
+      }
+    }
+
+    return slide;
+  }
+
+  private void applySlideFrontProp(Models.Slide slide, SlideDeckMLParser.SlideFrontPropContext p) {
+    String key = p.getChild(0).getText();
+
+    if ("layout".equals(key)) {
+      slide.layout = p.ID().getText();
+      return;
+    }
+
+    if ("transition".equals(key)) {
+      slide.transition = parseTransition(p.transitionValue());
+      return;
+    }
+
+    SlideDeckMLParser.ValueContext v = p.value();
+    if (v == null) return;
+
+    if ("title".equals(key)) slide.title = valueToString(v);
+    else if ("class".equals(key)) slide.cssClass = valueToString(v);
+    else if ("notes".equals(key)) slide.notes = valueToString(v);
+  }
+
+  private Models.Transition parseTransition(SlideDeckMLParser.TransitionValueContext tv) {
+    if (tv == null) return null;
+
+    Models.Transition t = new Models.Transition();
+
+    if (tv.ID() != null && !tv.ID().isEmpty()) {
+      t.name = tv.ID(0).getText();
+      if (tv.ID().size() > 1) t.backwardName = tv.ID(1).getText();
+      return t;
+    }
+
+    for (SlideDeckMLParser.TransitionObjPropContext p : tv.transitionObjProp()) {
+      String k = p.ID().getText();
+      String v = valueToString(p.value());
+      t.objectProps.put(k, v);
+    }
+
+    return t;
+  }
+
+  @Override
+  public Object visitMarkdownDecl(SlideDeckMLParser.MarkdownDeclContext ctx) {
+    return new Models.MarkdownItem(valueToString(ctx.value()));
+  }
+
+  @Override
+  public Object visitElementDecl(SlideDeckMLParser.ElementDeclContext ctx) {
+    Models.Element e = new Models.Element();
+    e.id = ctx.elementId.getText();
+    if (ctx.elementType() != null) e.type = ctx.elementType().getText();
+
+    for (SlideDeckMLParser.ElementPropContext p : ctx.elementProp()) {
+      applyElementProp(e, p);
+    }
+
+    return new Models.ElementItem(e);
+  }
+
+  private void applyElementProp(Models.Element e, SlideDeckMLParser.ElementPropContext p) {
+    String key = p.getChild(0).getText();
+
+    if ("content".equals(key)) e.content = valueToString(p.value());
+    else if ("ordered".equals(key)) e.ordered = valueToBoolean(p.value());
+    else if ("src".equals(key)) e.src = valueToString(p.value());
+    else if ("altText".equals(key)) e.altText = valueToString(p.value());
+    else if ("language".equals(key)) e.language = valueToString(p.value());
+    else if ("latexSource".equals(key)) e.latexSource = valueToString(p.value());
+    else if ("displayMode".equals(key)) e.displayMode = p.equationDisplayMode().getText();
+    else if ("autoplay".equals(key)) e.autoplay = valueToBoolean(p.value());
+    else if ("loop".equals(key)) e.loop = valueToBoolean(p.value());
+    else if ("muted".equals(key)) e.muted = valueToBoolean(p.value());
+    else if ("controls".equals(key)) e.controls = valueToBoolean(p.value());
+  }
+
+  @Override
+  public Object visitStepDecl(SlideDeckMLParser.StepDeclContext ctx) {
+    StepInfo si = new StepInfo();
+    si.stepIndex = Integer.parseInt(ctx.stepIndex.getText());
+
+    for (SlideDeckMLParser.StepItemContext item : ctx.stepItem()) {
+      if (item.getChildCount() >= 2 && "reveal".equals(item.getChild(0).getText()) && item.ID() != null && !item.ID().isEmpty()) {
+        si.revealIds.add(item.ID(0).getText());
+      }
+    }
+
+    return si;
+  }
+
+  private static final class StepInfo {
+    int stepIndex;
+    final java.util.List<String> revealIds = new java.util.ArrayList<>();
+  }
+
+  private static Object valueToScalar(SlideDeckMLParser.ValueContext v) {
+    if (v == null) return null;
+
+    if (v.bool() != null) {
+      return "true".equals(v.bool().getText());
+    }
+
+    if (v.number() != null) {
+      String t = v.number().getText();
+      if (t.contains(".")) return Double.parseDouble(t);
+      return Long.parseLong(t);
+    }
+
+    if (v.STR() != null) return unquote(v.STR().getText());
+    if (v.MLSTR() != null) return untriple(v.MLSTR().getText());
+
+    if (v.ID() != null) return v.ID().getText();
+
+    // For now, keep arrays/objects as their raw text.
+    return v.getText();
+  }
+
+  private static String valueToString(SlideDeckMLParser.ValueContext v) {
+    Object o = valueToScalar(v);
+    return o == null ? null : String.valueOf(o);
+  }
+
+  private static Boolean valueToBoolean(SlideDeckMLParser.ValueContext v) {
+    Object o = valueToScalar(v);
+    if (o instanceof Boolean) return (Boolean) o;
+    if (o instanceof String) {
+      String s = ((String) o).trim();
+      if ("true".equalsIgnoreCase(s)) return Boolean.TRUE;
+      if ("false".equalsIgnoreCase(s)) return Boolean.FALSE;
+    }
+    return null;
+  }
+
+  private static String unquote(String s) {
+    if (s == null) return null;
+    if (s.length() >= 2 && s.startsWith("\"") && s.endsWith("\"")) {
+      s = s.substring(1, s.length() - 1);
+    }
+    return s.replace("\\\"", "\"").replace("\\\\", "\\");
+  }
+
+  private static String untriple(String s) {
+    if (s == null) return null;
+    if (s.startsWith("\"\"\"") && s.endsWith("\"\"\"")) {
+      return s.substring(3, s.length() - 3);
+    }
+    return s;
+  }
+}
