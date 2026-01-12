@@ -112,7 +112,7 @@ element myElement {
 ```
 
 Supported element types in the current Java compiler:
-- `TextBlock` (`content`)
+- `TextBlock` (`content`) *(emitted as HTML `<div>` so it renders correctly inside click/position wrappers)*
 - `ListBlock` (`content` as lines, `ordered true/false`) *(emitted as HTML `<ul>/<ol>` so it renders correctly inside click wrappers)*
 - `CodeBlock` (`language`, `content`)
 - `EquationBlock` (`latexSource`, `displayMode INLINE|BLOCK`)
@@ -146,10 +146,10 @@ Code reveal (line-by-line style):
 ```sdeck
 element code { type CodeBlock; language "py"; content """a=1\nb=2\nprint(a+b)\n"""; }
 step 1 { codeReveal code 1..1; }
-step 2 { codeReveal code 1..2; }
-step 3 { codeReveal code 1..3; }
+step 2 { codeReveal code 2..2; }
+step 3 { codeReveal code 3..3; }
 ```
-This compiles to Slidev’s built-in highlight-steps meta: ` ```py {1|1-2|1-3} `, which gives the intended “dim the rest / focus the current lines” effect.
+This compiles to a single Slidev code block using highlight steps (e.g. ` ```py {0|1|2|3} `), so each click highlights a different line (the rest is dimmed).
 
 ### 6) Steps (click reveals)
 ```

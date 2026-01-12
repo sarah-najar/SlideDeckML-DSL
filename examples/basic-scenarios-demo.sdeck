@@ -140,9 +140,10 @@ print(y)
     }
 
     // CodeReveal states + synchronized image switch:
+    // (line-by-line focus: highlight one line per step)
     step 1 { codeReveal code 1..1; switch viz show viz1; }
-    step 2 { codeReveal code 1..2; switch viz show viz2; }
-    step 3 { codeReveal code 1..3; }
+    step 2 { codeReveal code 2..2; switch viz show viz2; }
+    step 3 { codeReveal code 3..3; }
   }
 
   slide positioningMix {
@@ -170,4 +171,3 @@ Absolute positioning (percent and px) on the same slide.
     step 2 { reveal rightImg; }
   }
 }
-

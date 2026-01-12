@@ -92,18 +92,22 @@ final class Models {
         java.util.List<CodeRevealStep> sorted = new java.util.ArrayList<>(reveals);
         java.util.Collections.sort(sorted, (a, b) -> Integer.compare(a.stepIndex, b.stepIndex));
 
-        StringBuilder out = new StringBuilder();
-        // Use Slidev's built-in "highlight steps" syntax: ```lang {1|2-3|4}```
-        // This gives the intended dim/hover-like effect while keeping a single
-        // code block rendered. Steps are driven by clicks automatically.
+        // Use Slidev's highlight-steps syntax so the code stays a single Markdown
+        // code block (no HTML wrapper), and the highlighted line changes per click.
+        //
+        // We prefix with `0` (no-op) to avoid starting at step 1 immediately:
+        // click 1 -> first real highlight.
+        int maxStep = 0;
+        for (CodeRevealStep r : sorted) maxStep = Math.max(maxStep, r.stepIndex);
+
+        java.util.List<String> steps = new java.util.ArrayList<>();
+        steps.add("0");
+        for (int i = 1; i <= maxStep; i++) steps.add("0");
+        for (CodeRevealStep r : sorted) steps.set(r.stepIndex, highlightRangeText(r.fromLine, r.toLine));
+
+        String meta = "{" + String.join("|", steps) + "}";
         String lang = element.language == null ? "" : element.language;
         String fullCode = element.content == null ? "" : element.content;
-
-        java.util.List<String> ranges = new java.util.ArrayList<>();
-        for (CodeRevealStep r : sorted) {
-          ranges.add(highlightRangeText(r.fromLine, r.toLine));
-        }
-        String meta = "{" + String.join("|", ranges) + "}";
 
         String block = "```" + lang + " " + meta + "\n" + fullCode + "\n```";
         String body = element.wrapPositionIfNeeded(block);
@@ -192,10 +196,9 @@ final class Models {
 
     String renderMarkdown() {
       if ("TextBlock".equals(type)) {
-        if (absolutePosition != null) {
-          return "<div>" + htmlEscapeWithBreaks(safe(content)) + "</div>";
-        }
-        return safe(content);
+        // Emit HTML so it renders consistently inside wrappers like <v-click>.
+        // (Markdown inside HTML is not re-parsed by Slidev/Vue.)
+        return "<div>" + htmlEscapeWithBreaks(safe(content)) + "</div>";
       }
 
       if ("ListBlock".equals(type)) {
@@ -340,13 +343,6 @@ final class Models {
         + inner + "\n"
         + "</v-click>\n"
         + "</v-click>";
-  }
-
-  static String highlightRange(int fromLine, int toLine) {
-    int f = Math.max(1, fromLine);
-    int t = Math.max(f, toLine);
-    if (f == t) return "{" + f + "}";
-    return "{" + f + "-" + t + "}";
   }
 
   static String highlightRangeText(int fromLine, int toLine) {

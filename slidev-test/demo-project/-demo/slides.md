@@ -31,10 +31,10 @@ transition: "fade"
 
 We reveal text and images step-by-step.
 <v-click at="1">
-Step 1: show a first point
+<div>Step 1: show a first point</div>
 </v-click>
 <v-click at="2">
-Step 2: show a second point
+<div>Step 2: show a second point</div>
 </v-click>
 <v-click at="3">
 <div style="position:absolute;left:90%;top:12%;width:10%;height:10%;z-index:1;transform:translate(-50%, 0);">
@@ -87,7 +87,7 @@ We use:
 <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900" alt="State 2" style="width:100%;height:100%;object-fit:contain;" />
 </div>
 </v-click>
-```py {1|1-2|1-3}
+```py {0|1|2|3}
 x = 1
 y = x + 2
 print(y)
