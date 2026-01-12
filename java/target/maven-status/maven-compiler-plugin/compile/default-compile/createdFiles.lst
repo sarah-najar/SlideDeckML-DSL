@@ -15,14 +15,18 @@ slidedeckml\grammar\SlideDeckMLParser$ObjContext.class
 slidedeckml\grammar\SlideDeckMLParser$FileContext.class
 slidedeckml\compiler\Models$Item.class
 slidedeckml\compiler\Main.class
+slidedeckml\compiler\SlideDeckMLToModelVisitor$SlotSwitchInfo.class
+slidedeckml\compiler\Models$Element$AbsolutePosition.class
 slidedeckml\grammar\SlideDeckMLParser.class
 slidedeckml\grammar\SlideDeckMLParser$DeckDeclContext.class
+slidedeckml\compiler\SlideDeckMLToModelVisitor$CodeRevealInfo.class
 slidedeckml\grammar\SlideDeckMLParser$SlideFrontPropContext.class
 slidedeckml\grammar\SlideDeckMLParser$TransitionObjPropContext.class
 slidedeckml\grammar\SlideDeckMLBaseVisitor.class
 slidedeckml\grammar\SlideDeckMLParser$ArrayContext.class
 slidedeckml\grammar\SlideDeckMLParser$DeckItemContext.class
 slidedeckml\grammar\SlideDeckMLParser$AreaContext.class
+slidedeckml\compiler\Models$SlotItem.class
 slidedeckml\grammar\SlideDeckMLParser$AnimationKindContext.class
 slidedeckml\compiler\Models$Deck.class
 slidedeckml\compiler\Models$Element.class
@@ -46,6 +50,7 @@ slidedeckml\compiler\Models$SlideRenderContext.class
 slidedeckml\grammar\SlideDeckMLParser$HeadDeclContext.class
 slidedeckml\grammar\SlideDeckMLParser$LayoutZoneContext.class
 slidedeckml\compiler\Models$ElementItem.class
+slidedeckml\compiler\Models$CodeRevealStep.class
 slidedeckml\compiler\SlideDeckMLToModelVisitor$StepInfo.class
 slidedeckml\grammar\SlideDeckMLLexer.class
 slidedeckml\grammar\SlideDeckMLParser$AnimationDeclContext.class

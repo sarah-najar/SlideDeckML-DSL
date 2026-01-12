@@ -51,7 +51,7 @@ final class SlidevEmitter {
 
       boolean hasAnyContent = false;
 
-      Models.SlideRenderContext ctx = new Models.SlideRenderContext(slide.revealAtByElementId);
+      Models.SlideRenderContext ctx = new Models.SlideRenderContext(slide, slide.revealAtByElementId);
       for (Models.Item item : slide.items) {
         String r = item.render(ctx);
         if (r != null && !r.trim().isEmpty()) {

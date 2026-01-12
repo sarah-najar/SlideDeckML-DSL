@@ -113,11 +113,43 @@ element myElement {
 
 Supported element types in the current Java compiler:
 - `TextBlock` (`content`)
-- `ListBlock` (`content` as lines, `ordered true/false`)
+- `ListBlock` (`content` as lines, `ordered true/false`) *(emitted as HTML `<ul>/<ol>` so it renders correctly inside click wrappers)*
 - `CodeBlock` (`language`, `content`)
 - `EquationBlock` (`latexSource`, `displayMode INLINE|BLOCK`)
-- `ImageElement` (`src`, `altText`) *(works best with local/accessible files)*
+- `ImageElement` (`src`, `altText`) *(emitted as HTML `<img>` so it renders correctly inside click/position wrappers; works best with local/accessible files)*
 - `VideoElement` (`src`, optional `controls/muted/autoplay/loop`)
+
+Positioning (implemented for absolute only):
+```sdeck
+position absolute {
+  x 50; y 40;
+  width 30; height 30;
+  unit PERCENT;
+  anchor CENTER;
+}
+```
+This compiles to an absolutely positioned `<div style="...">` wrapper around the element output.
+
+Slots + switching (for “image evolves with code” scenarios):
+```sdeck
+slot viz;
+
+element a { type ImageElement; src "..."; slotOf viz; }
+element b { type ImageElement; src "..."; slotOf viz; }
+
+step 1 { switch viz show a; }
+step 2 { switch viz show b; }
+```
+The `slot viz;` line controls **where** the variant is rendered in the slide. Variants (`slotOf viz`) do not render on their own.
+
+Code reveal (line-by-line style):
+```sdeck
+element code { type CodeBlock; language "py"; content """a=1\nb=2\nprint(a+b)\n"""; }
+step 1 { codeReveal code 1..1; }
+step 2 { codeReveal code 1..2; }
+step 3 { codeReveal code 1..3; }
+```
+This compiles to Slidev’s built-in highlight-steps meta: ` ```py {1|1-2|1-3} `, which gives the intended “dim the rest / focus the current lines” effect.
 
 ### 6) Steps (click reveals)
 ```
