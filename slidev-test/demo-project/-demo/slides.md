@@ -1,5 +1,5 @@
 ---
-title: "BNF Basic Scenarios Demo"
+title: "DSL Project - Demo"
 author: "Student"
 offlineExport: "true"
 template: "company-template"
@@ -11,7 +11,7 @@ assetsDir: "./public"
 Project: **My Project**
 Status: _In progress_
 <v-click at="1">
-<img src="https://sli.dev/logo.svg" alt="Company logo" style="max-width:100%;height:auto;object-fit:contain;" />
+<img src="/institution-logo.svg" alt="Institution logo" style="max-width:100%;height:auto;object-fit:contain;" />
 </v-click>
 
 ---
@@ -98,6 +98,7 @@ transition: "slide-left"
 transition: "fade"
 ---
 
+# Quizz DSL
 ## QUIZ
 
 <div style="display:flex;gap:16px;align-items:center;">
@@ -127,9 +128,7 @@ transition: "fade"
 
 ### Choices
 
-- 12
 - 3
-- 1+2
 
 _Results: on demand_
 
@@ -141,50 +140,17 @@ _Results: on demand_
 </v-click>
 
 ---
-transition: "fade"
----
-
-# Poll (ALWAYS results placeholder)
-## POLL
-
-**Which feature is most useful?**
-
-<div style="display:flex;gap:16px;align-items:center;">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2FREPLACE_WITH_YOUR_GOOGLE_FORM%2Fviewform" alt="QR code" width="200" height="200" />
-  <div>
-    <div><strong>Scan to participate</strong></div>
-    <div><a href="https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform" target="_blank" rel="noreferrer">https://docs.google.com/forms/d/e/REPLACE\_WITH\_YOUR\_GOOGLE\_FORM/viewform</a></div>
-  </div>
-</div>
-
-<div>
-  <div style="font-size:0.9em;opacity:0.8;margin-bottom:8px;">Fill the form directly (Google Forms)</div>
-  <iframe src="https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform?embedded=true" width="100%" height="520" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-</div>
-
-### Choices
-
-- Live coding
-- Quiz
-- Poll
-
-### Results
-
-_(Poll results are collected at runtime)_
-
-
----
 transition: "slide-left"
 ---
 
-# Slot + variants (image evolves with steps)
+# Slot + variants (overlay + simple animation)
 <v-click at="1">
 <v-click at="2" hide>
-<img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=900" alt="State 1" style="max-width:100%;height:auto;object-fit:cover;" />
+<div class="variant-card"><img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200" alt="API baseline"><div class="variant-overlay">Step 1 · Baseline monitoring</div></div>
 </v-click>
 </v-click>
 <v-click at="2">
-<img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900" alt="State 2" style="max-width:100%;height:auto;object-fit:cover;" />
+<div class="variant-card"><img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200" alt="API live"><div class="variant-overlay">Step 2 · Live API metrics</div></div>
 </v-click>
 
 ---

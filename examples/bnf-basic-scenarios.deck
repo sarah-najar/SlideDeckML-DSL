@@ -1,5 +1,5 @@
 @deck
-title: "BNF Basic Scenarios Demo"
+title: "DSL Project - Demo"
 author: "Student"
 offlineExport: true
 template: "company-template"
@@ -19,7 +19,7 @@ Project: **My Project**
 
 Status: _In progress_
 
-@1 ![Company logo](https://sli.dev/logo.svg) {fit=CONTAIN}
+@1 ![Institution logo](/institution-logo.svg) {fit=CONTAIN}
 
 ---
 
@@ -132,6 +132,8 @@ transition: SLIDE
 transition: FADE
 @endslide
 
+# Quizz DSL
+
 :::interactive QUIZ q1
 qrOnly: true
 googleForm: "https://docs.google.com/forms/d/e/1FAIpQLSeBcyExHOXY6g3IxRFfbfTwdgDBAIYvNoq1WyZmqt_xIjz_Gw/viewform?usp=publish-editor"
@@ -148,37 +150,13 @@ transition: FADE
 :::interactive QUIZ q1
 resultsOnly: true
 results: ON_DEMAND
-resultsSheet: "https://docs.google.com/spreadsheets/d/1hU2aivHTyFr--zROCdw1I1L6JFVejCsi17cFDrrboTs/edit?resourcekey=&gid=497691970#gid=497691970"
-resultsGid: 497691970
-resultsQuery: "select B, count(B) group by B label count(B) 'Votes'"
-resultsRefreshMs: 4000
+resultsEmbed: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSARbPsj1pbKAkHLkScNbnbqrCy922taNvsvzB5fcQ1BGLvjC9XiW9WW-wjYjETQhvYF5adtAkZ3MsL/pubchart?oid=173067250&format=interactive"
+resultsRefreshMs: 5000
 choices:
-- 12
 - 3 [correct]
-- 1+2
 :::
 
 @step 1: showResults(q1)
-
----
-
-@slide id: poll
-transition: FADE
-@endslide
-
-# Poll (ALWAYS results placeholder)
-
-:::interactive POLL p1
-question: Which feature is most useful?
-results: ALWAYS
-googleForm: "https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform"
-resultsEmbed: "https://docs.google.com/spreadsheets/d/e/REPLACE_WITH_YOUR_PUBLISHED_CHART/pubchart?oid=...&format=interactive"
-resultsRefreshMs: 5000
-choices:
-- Live coding
-- Quiz
-- Poll
-:::
 
 ---
 
@@ -186,11 +164,11 @@ choices:
 transition: SLIDE
 @endslide
 
-# Slot + variants (image evolves with steps)
+# Slot + variants (overlay + simple animation)
 
 :::slot viz
-@1 ![State 1](https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=900) {fit=COVER}
-@2 ![State 2](https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900) {fit=COVER}
+@1 <div class="variant-card"><img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200" alt="API baseline"><div class="variant-overlay">Step 1 · Baseline monitoring</div></div>
+@2 <div class="variant-card"><img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200" alt="API live"><div class="variant-overlay">Step 2 · Live API metrics</div></div>
 :::
 
 ---

@@ -10,22 +10,31 @@ public final class Main {
     Args parsed = Args.parse(args);
 
     String input = new String(Files.readAllBytes(Paths.get(parsed.inputPath)), StandardCharsets.UTF_8);
-    String output = new slidedeckml.compiler.bnf.BnfCompiler().compileToSlidevMarkdown(input);
+    slidedeckml.compiler.bnf.BnfCompiler compiler = new slidedeckml.compiler.bnf.BnfCompiler();
+    String output = compiler.compileToSlidevMarkdown(input);
     Files.write(Paths.get(parsed.outputPath), output.getBytes(StandardCharsets.UTF_8));
+
+    if (parsed.reportPath != null) {
+      String report = compiler.compileReportMarkdown(input);
+      Files.write(Paths.get(parsed.reportPath), report.getBytes(StandardCharsets.UTF_8));
+    }
   }
 
   private static final class Args {
     final String inputPath;
     final String outputPath;
+    final String reportPath;
 
-    private Args(String inputPath, String outputPath) {
+    private Args(String inputPath, String outputPath, String reportPath) {
       this.inputPath = inputPath;
       this.outputPath = outputPath;
+      this.reportPath = reportPath;
     }
 
     static Args parse(String[] args) {
       String input = null;
       String out = null;
+      String report = null;
 
       for (int i = 0; i < args.length; i++) {
         String a = args[i];
@@ -33,6 +42,8 @@ public final class Main {
           input = requireValue(args, ++i, a);
         } else if ("-o".equals(a) || "--out".equals(a) || "--output".equals(a)) {
           out = requireValue(args, ++i, a);
+        } else if ("--report".equals(a)) {
+          report = requireValue(args, ++i, a);
         } else if ("-h".equals(a) || "--help".equals(a)) {
           usageAndExit(0);
         } else {
@@ -50,7 +61,7 @@ public final class Main {
         System.exit(2);
       }
 
-      return new Args(input, out);
+      return new Args(input, out, report);
     }
 
     private static String requireValue(String[] args, int i, String flag) {
@@ -62,7 +73,7 @@ public final class Main {
     }
 
     private static void usageAndExit(int code) {
-      System.out.println("Usage: java ... slidedeckml.compiler.Main -i <input.deck> -o <slides.md>");
+      System.out.println("Usage: java ... slidedeckml.compiler.Main -i <input.deck> -o <slides.md> [--report <report.md>]");
       System.exit(code);
     }
   }

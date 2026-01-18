@@ -16,11 +16,19 @@ import java.nio.charset.StandardCharsets;
  */
 public final class BnfCompiler {
   public String compileToSlidevMarkdown(String input) {
+    ParseResult parsed = parse(input);
+    return new Emitter().emit(parsed.deck, parsed.slides);
+  }
+
+  public String compileReportMarkdown(String input) {
+    ParseResult parsed = parse(input);
+    return new ReportEmitter().emit(parsed.deck, parsed.slides);
+  }
+
+  private ParseResult parse(String input) {
     String normalized = normalize(input);
     List<String> lines = splitLines(normalized);
-
-    ParseResult parsed = new Parser(lines).parse();
-    return new Emitter().emit(parsed.deck, parsed.slides);
+    return new Parser(lines).parse();
   }
 
   private static final class ParseResult {
@@ -277,6 +285,11 @@ public final class BnfCompiler {
       if (qrOnly) {
         if (url == null || url.trim().isEmpty())
           return "";
+        return renderQrBlock(url.trim()) + "\n";
+      }
+
+      if ("QUIZ".equalsIgnoreCase(kind) && url != null && !url.trim().isEmpty()) {
+        // For quizzes, keep the participation slide clean: QR only (no link/embed/choices).
         return renderQrBlock(url.trim()) + "\n";
       }
 
@@ -769,6 +782,11 @@ public final class BnfCompiler {
         String line = body.get(bi);
         String trimmed = line.trim();
 
+        if ("---".equals(trimmed)) {
+          bi++;
+          continue;
+        }
+
         if (trimmed.isEmpty()) {
           slide.blocks.add(new RawMarkdownBlock(""));
           bi++;
@@ -1044,9 +1062,13 @@ public final class BnfCompiler {
       if (!inFence && "---".equals(t)) {
         slides.add(cur);
         cur = new ArrayList<>();
-      } else {
-        cur.add(l);
+        continue;
       }
+      if (!inFence && t.startsWith("@slide") && !cur.isEmpty()) {
+        slides.add(cur);
+        cur = new ArrayList<>();
+      }
+      cur.add(l);
     }
     slides.add(cur);
     // drop trailing empty slide chunks
@@ -1427,6 +1449,104 @@ public final class BnfCompiler {
     }
   }
 
+  private static final class ReportEmitter {
+    String emit(Deck deck, List<Slide> slides) {
+      StringBuilder out = new StringBuilder();
+      out.append("# SlideDeckML Report\n\n");
+      out.append("## Summary\n\n");
+      out.append("- Slides: ").append(slides.size()).append("\n");
+      out.append("- Images: ").append(countBlocks(slides, ImageBlock.class)).append("\n");
+      out.append("- Videos: ").append(countBlocks(slides, VideoBlock.class)).append("\n");
+      out.append("- Live code blocks: ").append(countBlocks(slides, LiveCodeBlock.class)).append("\n");
+      out.append("- Code blocks: ").append(countBlocks(slides, CodeBlock.class) + countBlocks(slides, RevealCodeBlock.class)).append("\n");
+      out.append("- Interactive blocks: ").append(countBlocks(slides, InteractiveBlock.class)).append("\n\n");
+
+      out.append("## Slides\n\n");
+      int index = 1;
+      for (Slide s : slides) {
+        String id = s.meta.get("id");
+        String title = firstHeading(s);
+        out.append(index).append(". ");
+        if (title != null) out.append(title);
+        else out.append("(no title)");
+        if (id != null && !id.isEmpty()) out.append("  ").append("`").append(id).append("`");
+        out.append("\n");
+        index++;
+      }
+
+      List<String> warnings = new ArrayList<>();
+      for (int i = 0; i < slides.size(); i++) {
+        Slide s = slides.get(i);
+        if (isEmptySlide(s)) {
+          warnings.add("Slide " + (i + 1) + " is empty.");
+        }
+        if (firstHeading(s) == null) {
+          warnings.add("Slide " + (i + 1) + " has no heading (# Title).");
+        }
+      }
+
+      if (!warnings.isEmpty()) {
+        out.append("\n## Warnings\n\n");
+        for (String w : warnings) {
+          out.append("- ").append(w).append("\n");
+        }
+      }
+
+      out.append("\n## Tips\n\n");
+      out.append("- Use `# Title` on each slide for clearer navigation.\n");
+      out.append("- Prefer `qrOnly: true` for quiz participation slides.\n");
+      out.append("- For live plots, pass `plot=\"plot.png\"` and save a PNG.\n");
+      return out.toString();
+    }
+
+    private static int countBlocks(List<Slide> slides, Class<?> klass) {
+      int count = 0;
+      for (Slide s : slides) {
+        for (Block b : s.blocks) {
+          if (klass.isInstance(b)) count++;
+          if (b instanceof PositionedBlock) {
+            Block inner = ((PositionedBlock) b).inner;
+            if (klass.isInstance(inner)) count++;
+          } else if (b instanceof AnimatedBlock) {
+            Block inner = ((AnimatedBlock) b).inner;
+            if (klass.isInstance(inner)) count++;
+          } else if (b instanceof RevealedBlock) {
+            Block inner = ((RevealedBlock) b).inner;
+            if (klass.isInstance(inner)) count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    private static boolean isEmptySlide(Slide slide) {
+      if (slide.blocks.isEmpty()) return true;
+      for (Block b : slide.blocks) {
+        if (b instanceof RawMarkdownBlock) {
+          String md = ((RawMarkdownBlock) b).markdown.trim();
+          if (!md.isEmpty()) return false;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private static String firstHeading(Slide slide) {
+      for (Block b : slide.blocks) {
+        if (b instanceof RawMarkdownBlock) {
+          String md = ((RawMarkdownBlock) b).markdown;
+          String[] lines = md.split("\r?\n");
+          for (String line : lines) {
+            String t = line.trim();
+            if (t.startsWith("# ")) return t.substring(2).trim();
+          }
+        }
+      }
+      return null;
+    }
+  }
+
   private static String intervalClickBlock(int startAt, Integer hideAt, String inner) {
     if (inner == null || inner.trim().isEmpty())
       return "";
@@ -1525,7 +1645,10 @@ public final class BnfCompiler {
   private static String normalize(String s) {
     if (s == null) return "";
     if (!s.isEmpty() && s.charAt(0) == '\uFEFF') s = s.substring(1);
-    return s.replace("\r\n", "\n").replace("\r", "\n");
+    String normalized = s.replace("\r\n", "\n").replace("\r", "\n");
+    // Guard against missing newline after slide separator.
+    normalized = normalized.replace("---@slide", "---\n@slide");
+    return normalized;
   }
 
   private static List<String> splitLines(String s) {

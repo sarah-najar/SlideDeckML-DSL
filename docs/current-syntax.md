@@ -54,7 +54,7 @@ transition: SLIDE
 This is normal Markdown.
 ```
 
-Slides are separated in the output by `---`.
+In the DSL, separate slides with `---` (same as Slidev).
 
 ## 3) Reveal on click
 
@@ -226,3 +226,16 @@ choices:
 ```
 
 Note: the Google Sheet must be shared publicly (at least “Anyone with the link can view”) for the chart to load.
+
+## 9) Addon: deck report (user acceptance)
+
+Generate a report with slide counts and simple warnings:
+
+- Add `--report <path>` to the compiler command.
+- The report includes slide titles, counts, and basic lint checks (empty slide, missing heading).
+
+Example:
+
+```text
+mvn -f java/pom.xml -q clean compile exec:java -Dexec.args="-i examples/bnf-basic-scenarios.deck -o slides.md --report report.md"
+```
