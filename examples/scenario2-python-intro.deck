@@ -1,0 +1,80 @@
+@deck
+title: "Python — Introduction"
+author: "Teacher"
+template: "company-template"
+companyName: "Programming 101"
+institutionLogo: "/institution-logo.svg"
+companyLogo: "/company-logo.svg"
+primaryColor: "#22c55e"
+@enddeck
+
+@slide id: intro
+layout: cover
+transition: SLIDE
+@endslide
+
+# Python programming
+
+From zero to first programs.
+
+---
+
+@slide id: plan
+transition: FADE
+@endslide
+
+# Plan
+
+- Variables
+- Conditions
+- Loops
+- Functions
+
+---
+
+@slide id: code-and-visual
+transition: SLIDE
+@endslide
+
+# Code (focus line by line) + evolving picture
+
+```py {1|2|3|4|5}
+x = 1
+y = x + 2
+print("y =", y)
+for i in range(3):
+    print("i =", i)
+```
+
+:::slot viz
+@1 ![State 1](/site-photo.svg) {fit=COVER x=80 y=58 w=36 h=46 unit=PERCENT anchor=CENTER animate=FADE_IN}
+@2 ![State 2](/site-photo.svg) {fit=COVER x=80 y=58 w=36 h=46 unit=PERCENT anchor=CENTER animate=FADE_IN}
+@3 ![State 3](/site-photo.svg) {fit=COVER x=80 y=58 w=36 h=46 unit=PERCENT anchor=CENTER animate=FADE_IN}
+@4 ![State 4](/site-photo.svg) {fit=COVER x=80 y=58 w=36 h=46 unit=PERCENT anchor=CENTER animate=FADE_IN}
+@5 ![State 5](/site-photo.svg) {fit=COVER x=80 y=58 w=36 h=46 unit=PERCENT anchor=CENTER animate=FADE_IN}
+:::
+
+---
+
+@slide id: mix
+transition: FADE
+@endslide
+
+# Mixing text and pictures (position choice)
+
+Python is a **high-level** language:
+- readable
+- great for automation
+- great for teaching
+
+@1 ![Illustration](/site-photo.svg) {fit=CONTAIN x=78 y=60 w=40 h=55 unit=PERCENT anchor=CENTER animate=SLIDE_UP}
+
+---
+
+@slide id: end
+transition: FADE
+@endslide
+
+# End
+
+Questions?

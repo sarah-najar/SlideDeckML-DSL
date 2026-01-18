@@ -1,0 +1,192 @@
+@deck
+title: "DSL Project - Demo"
+author: "Student"
+offlineExport: true
+template: "company-template"
+cssPath: "./style.css"
+assetsDir: "./public"
+@enddeck
+
+@slide
+id: cover
+layout: cover
+transition: SLIDE
+@endslide
+
+# Apprenticeship Slides
+
+Project: **My Project**
+
+Status: _In progress_
+
+@1 ![Institution logo](/institution-logo.svg) {fit=CONTAIN}
+
+---
+
+@slide id: outline
+transition: FADE
+@endslide
+
+# Outline
+
+- Context
+- Work done
+- Demo
+- Conclusion
+
+---
+
+@slide id: code-reveal
+transition: FADE
+@endslide
+
+# Code highlight (line by line)
+
+```java {1|2|3|4|5|6|7}
+public class Hello {
+  public static void main(String[] args) {
+    int a = 1;
+    int b = 2;
+    System.out.println(a + b);
+  }
+}
+```
+
+---
+
+@slide id: math
+transition: FADE
+@endslide
+
+# LaTeX math (KaTeX in Slidev)
+
+Inline math: $e^{i\\pi} + 1 = 0$.
+
+Block math:
+
+$$
+\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}
+$$
+
+And a matrix:
+
+$$
+\begin{bmatrix}
+1 & 2 \\\\
+3 & 4
+\end{bmatrix}
+$$
+
+---
+
+@slide id: live
+transition: SLIDE
+@endslide
+
+# Live coding (Monaco)
+
+```live ts { editable=true runtime=LOCAL showOutput=true revealLines=true }
+const x = 1
+const y = x + 2
+console.log('y =', y)
+```
+
+---
+
+@slide id: live-python
+transition: SLIDE
+@endslide
+
+# Live coding (Python + plot)
+
+```live py { editable=true runtime=REMOTE endpoint="http://127.0.0.1:8787/run/python" timeoutMs=12000 showOutput=true revealLines=true plot="plot.png" }
+import matplotlib.pyplot as plt
+
+points = [1, 3, 2, 5, 4]
+print("points =", points)
+
+plt.plot(points, marker="o")
+plt.title("API Monitoring Samples")
+plt.savefig("plot.png")
+```
+
+> After you click Run, you should see “Compiled successfully”. Go to the next slide for better visualization.
+
+> Start the local runner: `python tools/python-runner/server.py`
+
+---
+
+@slide id: live-python-plot
+transition: SLIDE
+@endslide
+
+# Plot (from previous slide)
+
+![Latest plot](http://127.0.0.1:8787/plot.png)
+
+> If the plot is empty, run the previous slide once.
+
+---
+
+@slide id: quiz
+transition: FADE
+@endslide
+
+# Quizz DSL
+
+:::interactive QUIZ q1
+qrOnly: true
+googleForm: "https://docs.google.com/forms/d/e/1FAIpQLSeBcyExHOXY6g3IxRFfbfTwdgDBAIYvNoq1WyZmqt_xIjz_Gw/viewform?usp=publish-editor"
+:::
+
+---
+
+@slide id: quiz-results
+transition: FADE
+@endslide
+
+# Quiz results
+
+:::interactive QUIZ q1
+resultsOnly: true
+results: ON_DEMAND
+resultsEmbed: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSARbPsj1pbKAkHLkScNbnbqrCy922taNvsvzB5fcQ1BGLvjC9XiW9WW-wjYjETQhvYF5adtAkZ3MsL/pubchart?oid=173067250&format=interactive"
+resultsRefreshMs: 5000
+choices:
+- 3 [correct]
+:::
+
+@step 1: showResults(q1)
+
+---
+
+@slide id: slots
+transition: SLIDE
+@endslide
+
+# Slot + variants (overlay + simple animation)
+
+:::slot viz
+@1 <div class="variant-card"><img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200" alt="API baseline"><div class="variant-overlay">Step 1 · Baseline monitoring</div></div>
+@2 <div class="variant-card"><img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200" alt="API live"><div class="variant-overlay">Step 2 · Live API metrics</div></div>
+:::
+
+---
+
+@slide id: video
+transition: FADE
+@endslide
+
+# Video demo
+
+@1 !video(https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4) {controls muted}
+
+---
+
+@slide id: end
+transition: FADE
+@endslide
+
+# Conclusion
+
+Thanks!

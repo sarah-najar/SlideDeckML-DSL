@@ -1,0 +1,166 @@
+// All-features demo (tests the currently implemented compiler features)
+// Includes: markdown, TextBlock, ListBlock, CodeBlock, EquationBlock, ImageElement,
+// VideoElement, absolute positioning, and click steps.
+//
+// Generate (from .../SlideDeckML-DSL/java):
+//   mvn -q exec:java -Dslidedeckml.input=../examples/all-features-demo.sdeck -Dslidedeckml.out=../slides.md
+
+deck "All Features Demo" {
+  head {
+    theme "default";
+    title "SlideDeckML -> Slidev (All Features)";
+    author "Student";
+    mdc true;
+    defaults { transition slide-left; }
+  }
+
+  slide cover {
+    markdown """# All Features Demo
+
+This file is designed to **exercise everything** we currently compile.
+
+- text + list
+- code + math
+- image + video
+- absolute positioning
+- click steps (`step` -> `v-click`)
+""";
+  }
+
+  slide markdownBasics {
+    transition fade;
+    markdown """# Markdown (direct)
+
+- Bullet 1
+- Bullet 2
+
+And an ordered list:
+1. One
+2. Two
+""";
+  }
+
+  slide elementList {
+    markdown """# ListBlock (element)
+
+This list is generated from an element and should render even when revealed.
+""";
+
+    element features {
+      type ListBlock;
+      ordered false;
+      content """TextBlock / ListBlock / CodeBlock
+EquationBlock
+ImageElement / VideoElement
+Position absolute (PX / PERCENT)
+""";
+    }
+
+    step 1 { reveal features; }
+  }
+
+  slide codeAndMath {
+    transition slide-up;
+    markdown """# Code + Math
+
+Code and equations are compiled to Slidev-friendly blocks.
+""";
+
+    element snippet {
+      type CodeBlock;
+      language "java";
+      content """public class Demo {
+  public static void main(String[] args) {
+    System.out.println("Hello Slidev");
+  }
+}
+""";
+    }
+    step 1 { reveal snippet; }
+
+    element equation {
+      type EquationBlock;
+      displayMode BLOCK;
+      latexSource "\\\\sum_{i=1}^{n} i = \\\\frac{n(n+1)}{2}";
+    }
+    step 2 { reveal equation; }
+  }
+
+  slide media {
+    markdown """# Media (image + video)
+
+Use URLs for the demo so it works without copying local assets.
+""";
+
+    element img1 {
+      type ImageElement;
+      src "https://sli.dev/logo.svg";
+      altText "Slidev logo";
+    }
+    step 1 { reveal img1; }
+
+    element vid1 {
+      type VideoElement;
+      src "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+      controls true;
+      muted true;
+    }
+    step 2 { reveal vid1; }
+  }
+
+  slide positioning {
+    markdown """# Absolute positioning
+
+We place elements on the slide with absolute coordinates.
+""";
+
+    element centerLogo {
+      type ImageElement;
+      src "https://sli.dev/logo.svg";
+      altText "Centered logo";
+      zIndex 1;
+      position absolute {
+        x 50; y 40;
+        width 30; height 30;
+        unit PERCENT;
+        anchor CENTER;
+      }
+    }
+
+    element centerLabel {
+      type TextBlock;
+      content "Centered at (50%, 40%)";
+      zIndex 2;
+      position absolute {
+        x 50; y 70;
+        unit PERCENT;
+        anchor TOP_CENTER;
+      }
+    }
+
+    element topLeftTag {
+      type TextBlock;
+      content "PX positioned label (20px, 20px)";
+      zIndex 3;
+      position absolute {
+        x 20; y 20;
+        unit PX;
+        anchor TOP_LEFT;
+      }
+    }
+
+    step 1 { reveal centerLogo; }
+    step 2 { reveal centerLabel; }
+    step 3 { reveal topLeftTag; }
+  }
+
+  slide end {
+    transition fade-out;
+    class "text-center";
+    markdown """# End
+
+If you can see the lists, math, image/video, and positioned elements: the pipeline works.
+""";
+  }
+}
+
