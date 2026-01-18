@@ -1,0 +1,183 @@
+@deck
+title: "BNF Basic Scenarios Demo"
+author: "Student"
+offlineExport: true
+template: "company-template"
+cssPath: "./style.css"
+assetsDir: "./public"
+@enddeck
+
+@slide
+id: cover
+layout: cover
+transition: SLIDE
+@endslide
+
+# Apprenticeship Slides
+
+Project: **My Project**
+
+Status: _In progress_
+
+@1 ![Company logo](https://sli.dev/logo.svg) {fit=CONTAIN}
+
+---
+
+@slide id: outline
+transition: FADE
+@endslide
+
+# Outline
+
+- Context
+- Work done
+- Demo
+- Conclusion
+
+---
+
+@slide id: code-reveal
+transition: FADE
+@endslide
+
+# Code highlight (line by line)
+
+```java {1|2|3|4|5|6|7}
+public class Hello {
+  public static void main(String[] args) {
+    int a = 1;
+    int b = 2;
+    System.out.println(a + b);
+  }
+}
+```
+
+---
+
+@slide id: math
+transition: FADE
+@endslide
+
+# LaTeX math (KaTeX in Slidev)
+
+Inline math: $e^{i\\pi} + 1 = 0$.
+
+Block math:
+
+$$
+\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}
+$$
+
+And a matrix:
+
+$$
+\\begin{bmatrix}
+1 & 2 \\\\
+3 & 4
+\\end{bmatrix}
+$$
+
+---
+
+@slide id: live
+transition: SLIDE
+@endslide
+
+# Live coding (Monaco)
+
+```live ts { editable=true runtime=LOCAL showOutput=true revealLines=true }
+const x = 1
+const y = x + 2
+console.log('y =', y)
+```
+
+---
+
+@slide id: live-python
+transition: SLIDE
+@endslide
+
+# Live coding (Python)
+
+```live py { editable=true runtime=REMOTE endpoint="http://127.0.0.1:8787/run/python" timeoutMs=10000 showOutput=true revealLines=true }
+print("Hello from Python")
+for i in range(3):
+    print("i =", i)
+```
+
+> Start the local runner: `python tools/python-runner/server.py`
+
+---
+
+@slide id: quiz
+transition: FADE
+@endslide
+
+# Quiz (ON_DEMAND results)
+
+:::interactive QUIZ q1
+question: What is the output of `print(1+2)`?
+results: ON_DEMAND
+googleForm: "https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform"
+resultsEmbed: "https://docs.google.com/spreadsheets/d/e/REPLACE_WITH_YOUR_PUBLISHED_CHART/pubchart?oid=...&format=interactive"
+resultsRefreshMs: 5000
+choices:
+- 12
+- 3 [correct]
+- 1+2
+:::
+
+@step 2: showResults(q1)
+
+---
+
+@slide id: poll
+transition: FADE
+@endslide
+
+# Poll (ALWAYS results placeholder)
+
+:::interactive POLL p1
+question: Which feature is most useful?
+results: ALWAYS
+googleForm: "https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform"
+resultsEmbed: "https://docs.google.com/spreadsheets/d/e/REPLACE_WITH_YOUR_PUBLISHED_CHART/pubchart?oid=...&format=interactive"
+resultsRefreshMs: 5000
+choices:
+- Live coding
+- Quiz
+- Poll
+:::
+
+---
+
+@slide id: slots
+transition: SLIDE
+@endslide
+
+# Slot + variants (image evolves with steps)
+
+:::slot viz
+@1 ![State 1](https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=900) {fit=COVER}
+@2 ![State 2](https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900) {fit=COVER}
+:::
+
+---
+
+@slide id: video
+transition: FADE
+@endslide
+
+# Video demo
+
+@1 !video(https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4) {controls muted}
+
+---
+
+@slide id: end
+transition: FADE
+@endslide
+
+# Conclusion
+
+Thanks!

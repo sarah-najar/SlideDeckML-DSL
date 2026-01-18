@@ -1,13 +1,22 @@
-## Java compiler (supported subset)
-- `head { theme/title/author/mdc/exportFilename; defaults { transition ... } }`
-- `slide { layout/class/transition/title/notes; markdown "..."; element ...; step N { reveal ... } }`
-- Elements compiled: `TextBlock`, `ListBlock`, `ImageElement`, `VideoElement`, `CodeBlock`, `EquationBlock`
-- Steps: `step N { reveal elementId; }` -> wraps that element in `<v-click at="N"> ... </v-click>`
-- Absolute positioning: `position absolute { x ...; y ...; width ...; height ...; unit PX|PERCENT; anchor ...; }` -> emitted as an absolutely positioned `<div style="...">`
-- Slots/switch (for evolving visuals): place `slot name;` then define variant elements with `slotOf name;`, and use `step N { switch name show variantId; }`
-- Code line-by-line (scenario-style): `step N { codeReveal codeId 1..K; }` emits a sequence of exclusive code states per step (using nested `<v-click>`).
+## Java compiler (supported subset — BNF)
 
-Not yet compiled (parsed only / ignored in output): rich animations (`animation { ... }`), zones/layout structures, template import pipeline, validation.
+Input syntax: `docs/BNF.pdf` (implemented in `java/src/main/java/slidedeckml/compiler/bnf/BnfCompiler.java`)
 
-Note:
-- If the deck has global headmatter, the compiler currently omits slide frontmatter for the first slide to avoid Slidev showing an empty first slide.
+### Supported
+- Deck headmatter: `@deck ... @enddeck` with `key: value` lines
+- Slides: `@slide ... @endslide` + Markdown content
+- Click reveals: `@N ...` (wraps the line/block in `<v-click at="N"> ... </v-click>`)
+- Slots/variants: `:::slot name ... :::` with `@N` entries
+- Code:
+  - Regular fenced code blocks (passed through)
+  - Line-by-line highlight: ` ```code lang {revealLines=true} ... ``` ` (emits Slidev highlight-steps meta)
+  - Live coding: ` ```live lang {...} ... ``` ` (emits `{monaco-run}` + `runnerOptions`)
+- Interactive blocks:
+  - `:::interactive QUIZ|POLL id ... :::`
+  - QR code + Google Forms iframe when `googleForm:` is a `docs.google.com/forms/...` URL
+  - Optional results embed: `resultsEmbed:` + auto-refresh via `AutoRefreshFrame`
+
+### Not supported / limitations
+- Fetching Google Forms results automatically without an embeddable source (Google Forms has no simple public results API)
+- Multi-user “shared console” aggregation for live coding (Slidev runs code in each viewer’s browser)
+

@@ -1,0 +1,60 @@
+import { defineCodeRunnersSetup } from '@slidev/types'
+
+type RunnerOptions = {
+  runtime?: string
+  endpoint?: string
+  timeoutMs?: number
+}
+
+export default defineCodeRunnersSetup(() => {
+  return {
+    py: runPythonRemote,
+    python: runPythonRemote,
+  }
+})
+
+async function runPythonRemote(code: string, ctx: any) {
+  const options = (ctx?.options ?? {}) as RunnerOptions
+  const endpoint = options.endpoint || 'http://localhost:8787/run/python'
+  const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : 10000
+
+  if ((options.runtime || '').toUpperCase() === 'LOCAL') {
+    return [{ error: 'Python runner does not support runtime=LOCAL (browser). Use runtime=REMOTE with an endpoint.' }]
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ code, timeoutMs }),
+      signal: controller.signal,
+    })
+
+    const text = await res.text()
+    let json: any
+    try {
+      json = JSON.parse(text)
+    } catch {
+      json = { error: `Invalid JSON from runner (${res.status}): ${text.slice(0, 300)}` }
+    }
+
+    if (!res.ok) {
+      return [{ error: json?.error || `Runner error (${res.status})` }]
+    }
+
+    const out: any[] = []
+    if (json?.stdout) out.push({ text: String(json.stdout) })
+    if (json?.stderr) out.push({ text: String(json.stderr), class: 'text-red-500' })
+    if (json?.error) out.push({ error: String(json.error) })
+    if (out.length === 0) out.push({ text: '(no output)', class: 'opacity-70' })
+    return out
+  } catch (e: any) {
+    const msg = e?.name === 'AbortError' ? `Timeout after ${timeoutMs}ms` : String(e)
+    return [{ error: `Python runner failed: ${msg}` }]
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+

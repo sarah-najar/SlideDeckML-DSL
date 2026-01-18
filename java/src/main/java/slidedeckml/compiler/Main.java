@@ -10,9 +10,7 @@ public final class Main {
     Args parsed = Args.parse(args);
 
     String input = new String(Files.readAllBytes(Paths.get(parsed.inputPath)), StandardCharsets.UTF_8);
-    SlideDeckMLCompiler compiler = new SlideDeckMLCompiler();
-    String output = compiler.compileToSlidevMarkdown(input);
-
+    String output = new slidedeckml.compiler.bnf.BnfCompiler().compileToSlidevMarkdown(input);
     Files.write(Paths.get(parsed.outputPath), output.getBytes(StandardCharsets.UTF_8));
   }
 
@@ -64,7 +62,7 @@ public final class Main {
     }
 
     private static void usageAndExit(int code) {
-      System.out.println("Usage: java ... slidedeckml.compiler.Main -i <input.sdeck> -o <slides.md>");
+      System.out.println("Usage: java ... slidedeckml.compiler.Main -i <input.deck> -o <slides.md>");
       System.exit(code);
     }
   }

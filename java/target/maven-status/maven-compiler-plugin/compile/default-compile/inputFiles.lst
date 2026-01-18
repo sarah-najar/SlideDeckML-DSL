@@ -6,4 +6,5 @@ C:\github\slidec\SlideDeckML-DSL\java\src\main\java\slidedeckml\compiler\Models.
 C:\github\slidec\SlideDeckML-DSL\java\src\main\java\slidedeckml\compiler\Main.java
 C:\github\slidec\SlideDeckML-DSL\java\target\generated-sources\antlr4\SlideDeckMLParser.java
 C:\github\slidec\SlideDeckML-DSL\java\target\generated-sources\antlr4\SlideDeckMLVisitor.java
+C:\github\slidec\SlideDeckML-DSL\java\src\main\java\slidedeckml\compiler\bnf\BnfCompiler.java
 C:\github\slidec\SlideDeckML-DSL\java\target\generated-sources\antlr4\SlideDeckMLLexer.java
