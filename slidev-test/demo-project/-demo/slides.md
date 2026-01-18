@@ -72,35 +72,58 @@ console.log('y =', y)
 transition: "slide-left"
 ---
 
-# Live coding (Python)
-```py {monaco-run} { height: '420px', outputHeight: '320px', editorOptions: { readOnly: false, wordWrap: 'on' }, runnerOptions: {runtime: 'REMOTE', endpoint: 'http://127.0.0.1:8787/run/python', timeoutMs: 10000 } }
-print("Hello from Python")
-for i in range(3):
-    print("i =", i)
+# Live coding (Python + plot)
+```py {monaco-run} { height: '420px', outputHeight: '320px', editorOptions: { readOnly: false, wordWrap: 'on' }, runnerOptions: {runtime: 'REMOTE', endpoint: 'http://127.0.0.1:8787/run/python', timeoutMs: 12000, plot: 'plot.png' } }
+import matplotlib.pyplot as plt
+
+points = [1, 3, 2, 5, 4]
+print("points =", points)
+
+plt.plot(points, marker="o")
+plt.title("API Monitoring Samples")
+plt.savefig("plot.png")
 ```
+> After you click Run, you should see “Compiled successfully”. Go to the next slide for better visualization.
 > Start the local runner: `python tools/python-runner/server.py`
+
+---
+transition: "slide-left"
+---
+
+# Plot (from previous slide)
+<img src="http://127.0.0.1:8787/plot.png" alt="Latest plot" style="max-width:100%;height:auto;object-fit:contain;" />
+> If the plot is empty, run the previous slide once.
 
 ---
 transition: "fade"
 ---
 
-# Quiz (ON_DEMAND results)
 ## QUIZ
 
-**What is the output of `print(1+2)`?**
-
 <div style="display:flex;gap:16px;align-items:center;">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2FREPLACE_WITH_YOUR_GOOGLE_FORM%2Fviewform" alt="QR code" width="200" height="200" />
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSeBcyExHOXY6g3IxRFfbfTwdgDBAIYvNoq1WyZmqt_xIjz_Gw%2Fviewform%3Fusp%3Dpublish-editor" alt="QR code" width="200" height="200" />
   <div>
     <div><strong>Scan to participate</strong></div>
-    <div><a href="https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform" target="_blank" rel="noreferrer">https://docs.google.com/forms/d/e/REPLACE\_WITH\_YOUR\_GOOGLE\_FORM/viewform</a></div>
+    <div><a href="https://docs.google.com/forms/d/e/1FAIpQLSeBcyExHOXY6g3IxRFfbfTwdgDBAIYvNoq1WyZmqt_xIjz_Gw/viewform?usp=publish-editor" target="_blank" rel="noreferrer">https://docs.google.com/forms/d/e/1FAIpQLSeBcyExHOXY6g3IxRFfbfTwdgDBAIYvNoq1WyZmqt\_xIjz\_Gw/viewform?usp=publish-editor</a></div>
   </div>
 </div>
 
 <div>
   <div style="font-size:0.9em;opacity:0.8;margin-bottom:8px;">Fill the form directly (Google Forms)</div>
-  <iframe src="https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_GOOGLE_FORM/viewform?embedded=true" width="100%" height="520" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeBcyExHOXY6g3IxRFfbfTwdgDBAIYvNoq1WyZmqt_xIjz_Gw/viewform?usp=publish-editor&amp;embedded=true" width="100%" height="520" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
 </div>
+
+### Answer
+
+_(No correct option marked)_
+
+
+---
+transition: "fade"
+---
+
+# Quiz results
+## QUIZ
 
 ### Choices
 
@@ -110,7 +133,7 @@ transition: "fade"
 
 _Results: on demand_
 
-<v-click at="2">
+<v-click at="1">
 ### Answer
 
 - ✅ 3

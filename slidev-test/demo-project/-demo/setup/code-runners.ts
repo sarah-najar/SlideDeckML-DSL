@@ -4,6 +4,7 @@ type RunnerOptions = {
   runtime?: string
   endpoint?: string
   timeoutMs?: number
+  plot?: string
 }
 
 export default defineCodeRunnersSetup(() => {
@@ -17,6 +18,7 @@ async function runPythonRemote(code: string, ctx: any) {
   const options = (ctx?.options ?? {}) as RunnerOptions
   const endpoint = options.endpoint || 'http://127.0.0.1:8787/run/python'
   const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : 10000
+  const plot = options.plot
 
   if ((options.runtime || '').toUpperCase() === 'LOCAL') {
     return [{ error: 'Python runner does not support runtime=LOCAL (browser). Use runtime=REMOTE with an endpoint.' }]
@@ -32,7 +34,7 @@ async function runPythonRemote(code: string, ctx: any) {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ code, timeoutMs }),
+      body: JSON.stringify({ code, timeoutMs, plot }),
       signal: controller.signal,
     })
 
@@ -51,6 +53,14 @@ async function runPythonRemote(code: string, ctx: any) {
     const out: any[] = []
     if (json?.stdout) out.push({ text: String(json.stdout) })
     if (json?.stderr) out.push({ text: String(json.stderr), class: 'text-red-500' })
+    if (json?.imagePng) {
+      out.push({
+        html: `<img src="data:image/png;base64,${json.imagePng}" alt="Plot" style="max-width:100%;height:auto;" />`,
+      })
+    }
+    if (json?.plotPath) {
+      out.push({ text: `Plot saved at: ${String(json.plotPath)}`, class: 'opacity-70 text-sm' })
+    }
     if (json?.error) out.push({ error: String(json.error) })
     if (out.length === 0) out.push({ text: '(no output)', class: 'opacity-70' })
     return out

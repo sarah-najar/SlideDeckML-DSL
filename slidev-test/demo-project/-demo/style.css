@@ -1,0 +1,18 @@
+:root {
+  --sdeck-live-editor-height: 520px;
+  --sdeck-live-output-height: 520px;
+}
+
+.slidev-code-runner {
+  gap: 16px;
+}
+
+.slidev-code-runner .slidev-code-runner-editor {
+  min-height: var(--sdeck-live-editor-height);
+}
+
+.slidev-code-runner .slidev-code-runner-output {
+  min-height: var(--sdeck-live-output-height);
+  max-height: var(--sdeck-live-output-height);
+  overflow: auto;
+}

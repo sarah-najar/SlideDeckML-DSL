@@ -9,12 +9,19 @@ Do NOT expose it to the internet.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+_LAST_PLOT_PNG: bytes | None = None
+_LAST_PLOT_PATH: str | None = None
+_PLOT_DIR = tempfile.mkdtemp(prefix="slidev-plots-")
 
 
 def _json_response(handler: BaseHTTPRequestHandler, status: int, payload: dict) -> None:
@@ -25,6 +32,16 @@ def _json_response(handler: BaseHTTPRequestHandler, status: int, payload: dict) 
     handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.wfile.write(body)
+
+
+def _binary_response(handler: BaseHTTPRequestHandler, status: int, content_type: str, data: bytes) -> None:
+    handler.send_response(status)
+    handler.send_header("Content-Type", content_type)
+    handler.send_header("Content-Length", str(len(data)))
+    handler.send_header("Access-Control-Allow-Origin", "*")
+    handler.send_header("Cache-Control", "no-store, max-age=0")
+    handler.end_headers()
+    handler.wfile.write(data)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -40,6 +57,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         if self.path.rstrip("/") == "":
             _json_response(self, 200, {"ok": True, "endpoints": ["/run/python"]})
+            return
+        if self.path.split("?", 1)[0].rstrip("/") == "/plot.png":
+            global _LAST_PLOT_PNG
+            global _LAST_PLOT_PATH
+            if _LAST_PLOT_PATH and os.path.isfile(_LAST_PLOT_PATH):
+                with open(_LAST_PLOT_PATH, "rb") as img:
+                    _binary_response(self, 200, "image/png", img.read())
+                return
+            if not _LAST_PLOT_PNG:
+                _json_response(self, 404, {"error": "No plot available. Run a slide with plot output first."})
+                return
+            _binary_response(self, 200, "image/png", _LAST_PLOT_PNG)
             return
         if self.path.rstrip("/") == "/health":
             _json_response(self, 200, {"ok": True})
@@ -64,6 +93,12 @@ class Handler(BaseHTTPRequestHandler):
             _json_response(self, 400, {"error": "Missing 'code' (string)"})
             return
 
+        plot_name = payload.get("plot")
+        if isinstance(plot_name, str):
+            plot_name = plot_name.strip() or None
+        else:
+            plot_name = None
+
         timeout_ms = payload.get("timeoutMs")
         try:
             timeout_s = max(0.1, (int(timeout_ms) / 1000.0)) if timeout_ms is not None else 10.0
@@ -83,7 +118,23 @@ class Handler(BaseHTTPRequestHandler):
                     capture_output=True,
                     text=True,
                     timeout=timeout_s,
+                    env={**os.environ, "MPLBACKEND": "Agg"},
                 )
+                image_b64 = None
+                plot_path = None
+                if plot_name:
+                    plot_path = os.path.join(tmpdir, plot_name)
+                    if os.path.isfile(plot_path):
+                        with open(plot_path, "rb") as img:
+                            data = img.read()
+                            image_b64 = base64.b64encode(data).decode("ascii")
+                            global _LAST_PLOT_PNG
+                            _LAST_PLOT_PNG = data
+                            global _LAST_PLOT_PATH
+                            ts = int(time.time() * 1000)
+                            dest = os.path.join(_PLOT_DIR, f"plot-{ts}.png")
+                            shutil.copyfile(plot_path, dest)
+                            _LAST_PLOT_PATH = dest
                 _json_response(
                     self,
                     200,
@@ -91,6 +142,8 @@ class Handler(BaseHTTPRequestHandler):
                         "stdout": completed.stdout,
                         "stderr": completed.stderr,
                         "exitCode": completed.returncode,
+                        "imagePng": image_b64,
+                        "plotPath": _LAST_PLOT_PATH,
                     },
                 )
             except subprocess.TimeoutExpired:
@@ -121,4 +174,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

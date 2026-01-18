@@ -245,7 +245,7 @@ public final class BnfCompiler {
         return "";
       if (!"ON_DEMAND".equalsIgnoreCase(ib.resultsVisibility))
         return "";
-      return "<div v-click=\"" + step + "\">\n" + ib.renderResults() + "\n</div>\n";
+      return "<div v-click=\"" + step + "\">\n" + ib.renderResultsForReveal() + "\n</div>\n";
     }
   }
 
@@ -257,7 +257,12 @@ public final class BnfCompiler {
     String view = "SUMMARY";
     boolean allowMultiple = false;
     String url;
+    boolean resultsOnly = false;
     String resultsEmbed;
+    String resultsSheet;
+    String resultsGid;
+    String resultsQuery;
+    boolean qrOnly = false;
     Integer resultsRefreshMs;
     final List<Choice> choices = new ArrayList<>();
     String shortAnswerText;
@@ -269,6 +274,18 @@ public final class BnfCompiler {
 
     @Override
     public String render(Slide slide) {
+      if (qrOnly) {
+        if (url == null || url.trim().isEmpty())
+          return "";
+        return renderQrBlock(url.trim()) + "\n";
+      }
+
+      if (resultsOnly) {
+        if ("ALWAYS".equalsIgnoreCase(resultsVisibility))
+          return renderResultsForReveal() + "\n";
+        return "";
+      }
+
       StringBuilder out = new StringBuilder();
       out.append("## ").append(kind).append("\n\n");
       if (question != null && !question.trim().isEmpty()) {
@@ -278,10 +295,6 @@ public final class BnfCompiler {
       if (url != null && !url.trim().isEmpty()) {
         String link = url.trim();
         out.append(renderQrBlock(link)).append("\n\n");
-        String iframe = googleFormsEmbedUrl(link);
-        if (iframe != null) {
-          out.append(renderGoogleFormsEmbed(iframe)).append("\n\n");
-        }
       }
 
       if (!choices.isEmpty()) {
@@ -296,7 +309,7 @@ public final class BnfCompiler {
       }
 
       if ("ALWAYS".equalsIgnoreCase(resultsVisibility)) {
-        out.append(renderResults()).append("\n");
+        out.append(renderResultsForReveal()).append("\n");
       } else {
         out.append("_Results: on demand_\n\n");
       }
@@ -304,10 +317,44 @@ public final class BnfCompiler {
       return out.toString();
     }
 
+    String renderResultsForReveal() {
+      if ("POLL".equalsIgnoreCase(kind)) {
+        if (resultsEmbed != null && !resultsEmbed.trim().isEmpty()) {
+          return "### Results\n\n" + renderResultsEmbed() + "\n";
+        }
+        if (resultsSheet != null && !resultsSheet.trim().isEmpty()) {
+          return "### Results\n\n" + renderResultsSheetChart() + "\n";
+        }
+        return "### Results\n\n_(Poll results are collected at runtime)_\n";
+      }
+
+      // QUIZ
+      StringBuilder out = new StringBuilder();
+      out.append("### Correct answer\n\n");
+      boolean anyCorrect = false;
+      for (Choice c : choices) {
+        if (!c.correct) continue;
+        out.append("- ").append(escapeMd(c.text)).append("\n");
+        anyCorrect = true;
+      }
+      if (!anyCorrect) {
+        out.append("_(No correct option marked)_\n");
+      }
+      if (resultsSheet != null && !resultsSheet.trim().isEmpty()) {
+        out.append("\n### Votes\n\n").append(renderResultsSheetChart()).append("\n");
+      } else if (resultsEmbed != null && !resultsEmbed.trim().isEmpty()) {
+        out.append("\n### Votes\n\n").append(renderResultsEmbed()).append("\n");
+      }
+      return out.toString();
+    }
+
     String renderResults() {
       if ("POLL".equalsIgnoreCase(kind)) {
         if (resultsEmbed != null && !resultsEmbed.trim().isEmpty()) {
           return "### Results\n\n" + renderResultsEmbed() + "\n";
+        }
+        if (resultsSheet != null && !resultsSheet.trim().isEmpty()) {
+          return "### Results\n\n" + renderResultsSheetChart() + "\n";
         }
         return "### Results\n\n_(Poll results are collected at runtime)_\n";
       }
@@ -328,6 +375,9 @@ public final class BnfCompiler {
       if (resultsEmbed != null && !resultsEmbed.trim().isEmpty()) {
         out.append("\n### Live results\n\n").append(renderResultsEmbed()).append("\n");
       }
+      if (resultsSheet != null && !resultsSheet.trim().isEmpty()) {
+        out.append("\n### Live results\n\n").append(renderResultsSheetChart()).append("\n");
+      }
       return out.toString();
     }
 
@@ -338,21 +388,28 @@ public final class BnfCompiler {
       return "<AutoRefreshFrame src=\"" + escapeAttr(src) + "\" :intervalMs=\"" + refresh + "\" height=\"420\" />";
     }
 
+    private String renderResultsSheetChart() {
+      int refresh = resultsRefreshMs == null ? 5000 : resultsRefreshMs.intValue();
+      if (refresh < 1000) refresh = 1000;
+      String gid = resultsGid == null ? "" : resultsGid.trim();
+      String q = resultsQuery == null ? "" : resultsQuery.trim();
+      return "<GoogleSheetChart sheetUrl=\"" + escapeAttr(resultsSheet.trim())
+          + "\" gid=\"" + escapeAttr(gid) + "\" query=\"" + escapeAttr(q)
+          + "\" :refreshMs=\"" + refresh + "\" />";
+    }
+
     private static String renderQrBlock(String link) {
       // Practical approach: generate a QR image via a public endpoint.
       // This enables “scan to vote” workflows without requiring a custom Slidev component.
       // Note: internet is required for the QR image request.
       String encoded = urlEncode(link);
-      String qr = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encoded;
-      return "<div style=\"display:flex;gap:16px;align-items:center;\">\n"
-          + "  <img src=\"" + escapeAttr(qr) + "\" alt=\"QR code\" width=\"200\" height=\"200\" />\n"
-          + "  <div>\n"
-          + "    <div><strong>Scan to participate</strong></div>\n"
-          + "    <div><a href=\"" + escapeAttr(link) + "\" target=\"_blank\" rel=\"noreferrer\">" + escapeMd(link) + "</a></div>\n"
-          + "  </div>\n"
+      String qr = "https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=" + encoded;
+      return "<div style=\"display:flex;justify-content:center;align-items:center;\">\n"
+          + "  <img src=\"" + escapeAttr(qr) + "\" alt=\"QR code\" width=\"320\" height=\"320\" />\n"
           + "</div>";
     }
 
+    @Deprecated
     private static String googleFormsEmbedUrl(String link) {
       // Google Forms embed works with a docs.google.com URL using `embedded=true`.
       // `forms.gle/...` short links generally cannot be embedded without resolving.
@@ -429,8 +486,8 @@ public final class BnfCompiler {
       String tag = wantOutput ? "{monaco-run}" : "{monaco}";
 
       // Make more space by default (editor + output). Output will scroll when needed.
-      String editorHeight = "480px";
-      String outputHeight = "420px";
+      String editorHeight = "520px";
+      String outputHeight = "520px";
 
       StringBuilder options = new StringBuilder();
       options.append("{ ");
@@ -768,9 +825,14 @@ public final class BnfCompiler {
                else if ("allowMultiple".equals(ml.key)) ib.allowMultiple = "true".equalsIgnoreCase(ml.value);
                else if ("url".equals(ml.key)) ib.url = ml.value;
                else if ("googleForm".equals(ml.key) || "googleForms".equals(ml.key)) ib.url = ml.value;
-               else if ("resultsEmbed".equals(ml.key)) ib.resultsEmbed = ml.value;
-               else if ("resultsRefreshMs".equals(ml.key)) ib.resultsRefreshMs = tryInt(ml.value);
-             }
+               else if ("resultsOnly".equals(ml.key)) ib.resultsOnly = "true".equalsIgnoreCase(ml.value);
+              else if ("resultsEmbed".equals(ml.key)) ib.resultsEmbed = ml.value;
+              else if ("resultsSheet".equals(ml.key)) ib.resultsSheet = ml.value;
+              else if ("resultsGid".equals(ml.key)) ib.resultsGid = ml.value;
+              else if ("resultsQuery".equals(ml.key)) ib.resultsQuery = ml.value;
+              else if ("qrOnly".equals(ml.key)) ib.qrOnly = "true".equalsIgnoreCase(ml.value);
+              else if ("resultsRefreshMs".equals(ml.key)) ib.resultsRefreshMs = tryInt(ml.value);
+            }
             bi++;
           }
 
@@ -1291,6 +1353,26 @@ public final class BnfCompiler {
       if (layout != null && !layout.isEmpty()) fm.put("layout", layout);
       String transition = slide.meta.get("transition");
       if (transition != null && !transition.isEmpty()) fm.put("transition", mapTransition(transition));
+      String url = slide.meta.get("url");
+      if (url != null && !url.isEmpty()) fm.put("url", url);
+      String scale = slide.meta.get("scale");
+      if (scale != null && !scale.isEmpty()) fm.put("scale", scale);
+      String klass = slide.meta.get("class");
+      if (klass != null && !klass.isEmpty()) fm.put("class", klass);
+
+      // Syntax sugar: `compiler: python` or `runner: python` -> iframe to local playground.
+      String compiler = slide.meta.get("compiler");
+      if (compiler == null || compiler.isEmpty())
+        compiler = slide.meta.get("runner");
+      if (compiler != null && !compiler.trim().isEmpty()) {
+        String c = compiler.trim().toLowerCase();
+        if ("python".equals(c) || "py".equals(c)) {
+          fm.put("layout", "iframe");
+          fm.put("url", "/playground.html");
+          if (!fm.containsKey("scale"))
+            fm.put("scale", "0.92");
+        }
+      }
       return fm;
     }
 

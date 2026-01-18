@@ -65,7 +65,7 @@ Prefix a line with `@N` to show it at click step `N`:
 @2 This appears at click 2
 ```
 
-This compiles to Slidev `<v-click at="N"> ... </v-click>`.
+This compiles to Slidev `v-click` directives.
 
 ## 4) Images and videos
 
@@ -147,21 +147,30 @@ print("Hello from Python")
 ```
 ````
 
+To show a plot in the output, save a PNG and pass `plot="plot.png"`:
+
+````text
+```live py { editable=true runtime=REMOTE endpoint="http://127.0.0.1:8787/run/python" timeoutMs=12000 showOutput=true autorun=true plot="plot.png" }
+import matplotlib.pyplot as plt
+plt.plot([1, 3, 2, 5])
+plt.savefig("plot.png")
+```
+````
+
+Note: the Python runner must have `matplotlib` installed.
+
+To show the plot on a separate slide, embed:
+- `![Latest plot](http://127.0.0.1:8787/plot.png)`
+
 ## 8) Quiz / Poll (Google Forms)
 
-Interactive block:
+Interactive block (QR code only):
 
 ```text
 :::interactive QUIZ q1
-question: What is 1+2?
-results: ON_DEMAND
+qrOnly: true
 googleForm: "https://docs.google.com/forms/d/e/REPLACE/viewform"
-choices:
-- 12
-- 3 [correct]
 :::
-
-@step 2: showResults(q1)
 ```
 
 ### Live-updating results (embed)
@@ -185,5 +194,35 @@ choices:
 :::
 ```
 
-The included Slidev demo project contains `AutoRefreshFrame`:
+You can also render a chart directly from a Google Sheet URL (no hardcoded URLs, you provide them):
+
+```text
+resultsSheet: "https://docs.google.com/spreadsheets/d/ID/edit#gid=123"
+resultsGid: 123
+resultsQuery: "select B, count(B) group by B label count(B) 'Votes'"
+```
+
+The included Slidev demo project contains:
 - `slidev-test/demo-project/-demo/components/AutoRefreshFrame.vue`
+- `slidev-test/demo-project/-demo/components/GoogleSheetChart.vue`
+
+### Results-only slide (to avoid showing the form URL)
+
+Use `resultsOnly: true` to keep the slide clean, then reveal results with `@step`:
+
+```text
+:::interactive QUIZ q1
+resultsOnly: true
+results: ON_DEMAND
+resultsSheet: "https://docs.google.com/spreadsheets/d/ID/edit#gid=123"
+resultsGid: 123
+resultsQuery: "select B, count(B) group by B label count(B) 'Votes'"
+choices:
+- A
+- B [correct]
+:::
+
+@step 1: showResults(q1)
+```
+
+Note: the Google Sheet must be shared publicly (at least “Anyone with the link can view”) for the chart to load.

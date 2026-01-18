@@ -7,7 +7,7 @@ This compiler parses the **BNF-style deck syntax** (see `docs/BNF.pdf`) and emit
 From the repo root:
 - Build: `mvn -f java/pom.xml package`
 - Run (default example): `mvn -f java/pom.xml -q clean compile exec:java`
-- Run (custom): `mvn -f java/pom.xml -q clean compile exec:java -Dslidedeckml.input=../examples/bnf-basic-scenarios.deck -Dslidedeckml.out=../slides.md`
+- Run (custom): `mvn -f java/pom.xml -q clean compile exec:java -Dslidedeckml.input=../examples/bnf-basic-scenarios.deck -Dslidedeckml.out=../slidev-test/demo-project/-demo/slides.md`
 
 Notes:
 - This module is now **BNF-only** (legacy ANTLR compiler removed).
@@ -15,8 +15,10 @@ Notes:
 
 Notes on extensions:
 - Live code blocks use Slidev Monaco and are emitted as `{monaco-run}` (autorun). JS/TS are built-in; other languages require `setup/code-runners.ts`.
-- Quiz/Poll blocks can render a QR code when `url:` or `googleForm:` is provided. If the URL is a `docs.google.com/forms/...` link, the compiler also embeds the form in an `<iframe>`.
-- To show *live-updating* results, provide `resultsEmbed:` with an embeddable URL (typically a published Google Sheets chart) and the Slidev component `AutoRefreshFrame` (included in `slidev-test/demo-project/-demo/components/AutoRefreshFrame.vue`).
+- Python plots: set `plot="plot.png"` in the `live` block and save a PNG in code; the runner will return it.
+- Quiz/Poll blocks render a QR code when `url:` or `googleForm:` is provided (QR only).
+- To show results in-slide, provide either `resultsSheet:` (recommended) or `resultsEmbed:` + `resultsRefreshMs:` (examples in `examples/bnf-basic-scenarios.deck`).
+- For `resultsSheet:` the Google Sheet must be shared publicly (at least “Anyone with the link can view”).
 
 ## Preview the generated slides in Slidev
 
@@ -27,7 +29,7 @@ Notes on extensions:
 ### Option B: use the included demo Slidev project (already in this repo)
 From `slidev-test/demo-project/-demo`:
 - Start Slidev: `npm run dev`
-- Replace the Slidev project’s `slidev-test/demo-project/-demo/slides.md` with the generated one (copy from `slides.md` at the repo root).
+- Generate directly into the Slidev project: use `-Dslidedeckml.out=../slidev-test/demo-project/-demo/slides.md` when running Maven.
 
 ## Offline export (web presentation)
 
