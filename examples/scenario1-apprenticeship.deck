@@ -1,0 +1,89 @@
+@deck
+title: "Apprenticeship Report"
+author: "Student"
+offlineExport: true
+template: "company-template"
+companyName: "Company Name"
+institutionLogo: "/institution-logo.svg"
+companyLogo: "/company-logo.svg"
+primaryColor: "#3b82f6"
+fontFamily: "Inter, Segoe UI, Arial, sans-serif"
+@enddeck
+
+@slide id: title
+layout: cover
+transition: SLIDE
+@endslide
+
+# Apprenticeship Project
+
+**Project:** SlideDeckML → Slidev  
+**Status:** _In progress_
+
+@1 ![Work site](/site-photo.svg) {fit=COVER x=50 y=62 w=92 h=58 unit=PERCENT anchor=CENTER animate=ZOOM_IN}
+
+---
+
+@slide id: outline
+transition: FADE
+@endslide
+
+# Outline
+
+1. Context
+2. Work done
+3. In‑situ demo (video)
+4. Conclusion
+
+---
+
+@slide id: animations
+transition: FADE
+@endslide
+
+# Animations (text + image)
+
+@1 We start with the context (appears first).
+
+@2 Then we reveal key points progressively.
+
+@3 ![Architecture sketch](/site-photo.svg) {fit=CONTAIN x=82 y=58 w=34 h=42 unit=PERCENT anchor=CENTER animate=SLIDE_UP}
+
+---
+
+@slide id: more
+transition: SLIDE
+@endslide
+
+# Another slide (progressive reveal)
+
+- Always keep the slide readable
+- Reveal only what you explain now
+
+@1 <strong>Step 1:</strong> Goal of the sprint
+@2 <strong>Step 2:</strong> Implementation details
+@3 <strong>Step 3:</strong> Next steps
+
+---
+
+@slide id: video
+transition: FADE
+@endslide
+
+# In‑situ demo (video)
+
+@1 !video(https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4) {controls muted}
+
+---
+
+@slide id: conclusion
+transition: FADE
+@endslide
+
+# Conclusion
+
+- What I delivered
+- What I learned
+- What I will improve next
+
+Thanks!

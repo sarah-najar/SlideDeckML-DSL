@@ -15,7 +15,7 @@ export default defineCodeRunnersSetup(() => {
 
 async function runPythonRemote(code: string, ctx: any) {
   const options = (ctx?.options ?? {}) as RunnerOptions
-  const endpoint = options.endpoint || 'http://localhost:8787/run/python'
+  const endpoint = options.endpoint || 'http://127.0.0.1:8787/run/python'
   const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : 10000
 
   if ((options.runtime || '').toUpperCase() === 'LOCAL') {
@@ -25,6 +25,10 @@ async function runPythonRemote(code: string, ctx: any) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
+    if (typeof fetch === 'undefined') {
+      return [{ error: 'Python runner: fetch() is not available in this environment.' }]
+    }
+
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -52,9 +56,14 @@ async function runPythonRemote(code: string, ctx: any) {
     return out
   } catch (e: any) {
     const msg = e?.name === 'AbortError' ? `Timeout after ${timeoutMs}ms` : String(e)
-    return [{ error: `Python runner failed: ${msg}` }]
+    return [{
+      error:
+        `Python runner failed: ${msg}\n`
+        + `- Is the server running? python tools/python-runner/server.py\n`
+        + `- Endpoint: ${endpoint}\n`
+        + `- Note: if you use https for Slidev, the browser may block http endpoints (mixed content).`,
+    }]
   } finally {
     clearTimeout(timeout)
   }
 }
-

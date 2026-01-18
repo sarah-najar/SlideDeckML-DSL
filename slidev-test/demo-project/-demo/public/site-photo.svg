@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#g)"/>
+  <circle cx="990" cy="150" r="70" fill="#f59e0b" opacity="0.9"/>
+  <rect x="130" y="250" width="940" height="320" rx="26" fill="#0f172a" opacity="0.85"/>
+  <rect x="170" y="290" width="280" height="240" rx="16" fill="#111827"/>
+  <rect x="480" y="290" width="550" height="48" rx="12" fill="#111827"/>
+  <rect x="480" y="360" width="550" height="28" rx="10" fill="#111827" opacity="0.95"/>
+  <rect x="480" y="404" width="470" height="28" rx="10" fill="#111827" opacity="0.75"/>
+  <rect x="480" y="448" width="520" height="28" rx="10" fill="#111827" opacity="0.6"/>
+  <text x="200" y="215" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="700" fill="#e2e8f0">Work Site</text>
+  <text x="200" y="610" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#94a3b8">Placeholder image (local asset)</text>
+</svg>
+

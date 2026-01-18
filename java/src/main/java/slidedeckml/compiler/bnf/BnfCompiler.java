@@ -47,6 +47,124 @@ public final class BnfCompiler {
     String render(Slide slide);
   }
 
+  private static final class PositionedBlock implements Block {
+    final Block inner;
+    final Position pos;
+
+    PositionedBlock(Block inner, Position pos) {
+      this.inner = inner;
+      this.pos = pos;
+    }
+
+    @Override
+    public String render(Slide slide) {
+      String body = inner.render(slide).trim();
+      if (body.isEmpty())
+        return "";
+      return "<div style=\"" + escapeAttr(pos.toCss()) + "\">\n" + body + "\n</div>\n";
+    }
+  }
+
+  private static final class AnimatedBlock implements Block {
+    final Block inner;
+    final String kind;
+
+    AnimatedBlock(Block inner, String kind) {
+      this.inner = inner;
+      this.kind = kind;
+    }
+
+    @Override
+    public String render(Slide slide) {
+      String body = inner.render(slide).trim();
+      if (body.isEmpty())
+        return "";
+
+      // Slidev includes Motion by default; this gives a nicer "appear" than raw v-click.
+      String motion;
+      String k = kind == null ? "" : kind.trim().toUpperCase();
+      if ("SLIDE_UP".equals(k) || "SLIDE".equals(k)) {
+        motion = "{ initial: { opacity: 0, y: 18 }, enter: { opacity: 1, y: 0, transition: { duration: 280 } } }";
+      } else if ("ZOOM_IN".equals(k) || "ZOOM".equals(k)) {
+        motion = "{ initial: { opacity: 0, scale: 0.98 }, enter: { opacity: 1, scale: 1, transition: { duration: 280 } } }";
+      } else if ("FADE_IN".equals(k) || "FADE".equals(k) || k.isEmpty()) {
+        motion = "{ initial: { opacity: 0 }, enter: { opacity: 1, transition: { duration: 240 } } }";
+      } else {
+        motion = "{ initial: { opacity: 0 }, enter: { opacity: 1, transition: { duration: 240 } } }";
+      }
+
+      return "<div v-motion=\"" + escapeAttr(motion) + "\">\n" + body + "\n</div>\n";
+    }
+  }
+
+  private static final class Position {
+    final double x;
+    final double y;
+    final Double w;
+    final Double h;
+    final String unit;
+    final String anchor;
+
+    Position(double x, double y, Double w, Double h, String unit, String anchor) {
+      this.x = x;
+      this.y = y;
+      this.w = w;
+      this.h = h;
+      this.unit = unit == null ? "PERCENT" : unit;
+      this.anchor = anchor == null ? "TOP_LEFT" : anchor;
+    }
+
+    String toCss() {
+      boolean percent = "PERCENT".equalsIgnoreCase(unit) || "%".equals(unit);
+      String u = percent ? "%" : "px";
+      StringBuilder css = new StringBuilder();
+      css.append("position:absolute;");
+      css.append("left:").append(trimNumber(x)).append(u).append(";");
+      css.append("top:").append(trimNumber(y)).append(u).append(";");
+      if (w != null)
+        css.append("width:").append(trimNumber(w.doubleValue())).append(u).append(";");
+      if (h != null)
+        css.append("height:").append(trimNumber(h.doubleValue())).append(u).append(";");
+
+      String a = anchor.trim().toUpperCase();
+      String tx = "0";
+      String ty = "0";
+      if ("CENTER".equals(a) || "CENTER_CENTER".equals(a)) {
+        tx = "-50%";
+        ty = "-50%";
+      } else if ("TOP_CENTER".equals(a)) {
+        tx = "-50%";
+      } else if ("BOTTOM_CENTER".equals(a)) {
+        tx = "-50%";
+        ty = "-100%";
+      } else if ("CENTER_LEFT".equals(a)) {
+        ty = "-50%";
+      } else if ("CENTER_RIGHT".equals(a)) {
+        tx = "-100%";
+        ty = "-50%";
+      } else if ("TOP_RIGHT".equals(a)) {
+        tx = "-100%";
+      } else if ("BOTTOM_LEFT".equals(a)) {
+        ty = "-100%";
+      } else if ("BOTTOM_RIGHT".equals(a)) {
+        tx = "-100%";
+        ty = "-100%";
+      }
+
+      if (!"0".equals(tx) || !"0".equals(ty))
+        css.append("transform:translate(").append(tx).append(",").append(ty).append(");");
+
+      css.append("z-index:5;");
+      return css.toString();
+    }
+
+    private static String trimNumber(double d) {
+      if (Math.floor(d) == d)
+        return String.valueOf((long) d);
+      return String.valueOf(d);
+    }
+  }
+
   private static final class RawMarkdownBlock implements Block {
     final String markdown;
 
@@ -74,7 +192,7 @@ public final class BnfCompiler {
       String body = inner.render(slide).trim();
       if (body.isEmpty())
         return "";
-      return "<v-click at=\"" + step + "\">\n" + body + "\n</v-click>\n";
+      return "<div v-click=\"" + step + "\">\n<div>\n" + body + "\n</div>\n</div>\n";
     }
   }
 
@@ -127,7 +245,7 @@ public final class BnfCompiler {
         return "";
       if (!"ON_DEMAND".equalsIgnoreCase(ib.resultsVisibility))
         return "";
-      return "<v-click at=\"" + step + "\">\n" + ib.renderResults() + "\n</v-click>\n";
+      return "<div v-click=\"" + step + "\">\n" + ib.renderResults() + "\n</div>\n";
     }
   }
 
@@ -311,8 +429,8 @@ public final class BnfCompiler {
       String tag = wantOutput ? "{monaco-run}" : "{monaco}";
 
       // Make more space by default (editor + output). Output will scroll when needed.
-      String editorHeight = "420px";
-      String outputHeight = "320px";
+      String editorHeight = "480px";
+      String outputHeight = "420px";
 
       StringBuilder options = new StringBuilder();
       options.append("{ ");
@@ -473,8 +591,8 @@ public final class BnfCompiler {
         objectFit = "cover";
       else if ("STRETCH".equalsIgnoreCase(fit))
         objectFit = "fill";
-      return "<img src=\"" + escapeAttr(src) + "\" alt=\"" + escapeAttr(alt) + "\" style=\"max-width:100%;height:auto;object-fit:"
-          + objectFit + ";\" />\n";
+      return "<img src=\"" + escapeAttr(src) + "\" alt=\"" + escapeAttr(alt)
+          + "\" style=\"width:100%;height:100%;object-fit:" + objectFit + ";\" />\n";
     }
   }
 
@@ -764,7 +882,7 @@ public final class BnfCompiler {
         }
 
         // Default: keep raw line (may include headings/lists/paragraphs).
-        slide.blocks.add(wrapRevealIfNeeded(line, new RawMarkdownBlock(line + "\n")));
+        slide.blocks.add(wrapRevealIfNeeded(line, parseInlineBlock(line)));
         bi++;
       }
 
@@ -780,12 +898,65 @@ public final class BnfCompiler {
     }
 
     private Block parseInlineBlock(String text) {
-      String t = text.trim();
+      LineWithOpts lw = LineWithOpts.parse(text);
+      String baseText = lw.base;
+      String t = baseText.trim();
+
+      Block base;
       ImageLine il = ImageLine.tryParse(t);
-      if (il != null) return new ImageBlock(il.alt, il.src, il.fit);
-      VideoLine vl = VideoLine.tryParse(t);
-      if (vl != null) return new VideoBlock(vl.src, vl.flags);
-      return new RawMarkdownBlock(t + "\n");
+      if (il != null) {
+        String fit = lw.opts.getOrDefault("fit", il.fit);
+        base = new ImageBlock(il.alt, il.src, fit);
+      }
+      else {
+        // For video, keep parsing flags from the full text (they are usually bare tokens, not k=v).
+        VideoLine vl = VideoLine.tryParse(text.trim());
+        if (vl != null) base = new VideoBlock(vl.src, vl.flags);
+        else base = new RawMarkdownBlock(baseText.endsWith("\n") ? baseText : (baseText + "\n"));
+      }
+
+      // Only apply wrappers to non-Markdown blocks.
+      if (!(base instanceof RawMarkdownBlock) && !lw.opts.isEmpty()) {
+        String animate = firstNonNull(lw.opts.get("animate"), lw.opts.get("animation"));
+        if (animate != null && !animate.trim().isEmpty() && !"NONE".equalsIgnoreCase(animate))
+          base = new AnimatedBlock(base, animate);
+
+        Position pos = tryParsePosition(lw.opts);
+        if (pos != null)
+          base = new PositionedBlock(base, pos);
+      }
+
+      return base;
+    }
+
+    private static String firstNonNull(String a, String b) {
+      return a != null ? a : b;
+    }
+
+    private static Position tryParsePosition(Map<String, String> opts) {
+      String xs = opts.get("x");
+      String ys = opts.get("y");
+      if (xs == null || ys == null)
+        return null;
+      Double x = tryDouble(xs);
+      Double y = tryDouble(ys);
+      if (x == null || y == null)
+        return null;
+
+      Double w = tryDouble(firstNonNull(opts.get("w"), opts.get("width")));
+      Double h = tryDouble(firstNonNull(opts.get("h"), opts.get("height")));
+      String unit = opts.get("unit");
+      String anchor = opts.get("anchor");
+      return new Position(x.doubleValue(), y.doubleValue(), w, h, unit, anchor);
+    }
+
+    private static Double tryDouble(String s) {
+      if (s == null) return null;
+      try {
+        return Double.valueOf(Double.parseDouble(s.trim()));
+      } catch (NumberFormatException e) {
+        return null;
+      }
     }
 
     private boolean peekIs(String s) {
@@ -1055,6 +1226,21 @@ public final class BnfCompiler {
           out.append(e.getKey()).append(": ").append(yamlString(e.getValue())).append("\n");
         }
         out.append("---\n\n");
+        out.append("<style>\n")
+            .append(".slidev-runner-output{overflow:auto;min-height:0;}\n")
+            .append(".slidev-runner-output .output-line{white-space:pre-wrap;}\n")
+            .append(".sdeck-template-header{position:absolute;left:0;top:0;width:100%;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:10;}\n")
+            .append(".sdeck-template-left{display:flex;gap:12px;align-items:center;}\n")
+            .append(".sdeck-template-left img,.sdeck-template-right img{height:34px;max-width:160px;object-fit:contain;}\n")
+            .append(".sdeck-company-name{font-weight:700;letter-spacing:0.2px;opacity:0.9;}\n")
+            .append(".slidev-layout{padding-top:46px;}\n")
+            .append("</style>\n\n");
+
+        String primary = deck.meta.get("primaryColor");
+        if (primary != null && !primary.trim().isEmpty())
+          out.append("<style>:root{--sdeck-primary:").append(primary.trim()).append(";}</style>\n\n");
+        else
+          out.append("<style>:root{--sdeck-primary:#3b82f6;}</style>\n\n");
       }
 
       for (int si = 0; si < slides.size(); si++) {
@@ -1078,6 +1264,9 @@ public final class BnfCompiler {
           }
           out.append("---\n\n");
         }
+
+        String header = templateHeaderHtml(deck);
+        if (header != null) out.append(header);
 
         for (Block b : slide.blocks) {
           String r = b.render(slide);
@@ -1113,19 +1302,60 @@ public final class BnfCompiler {
       if (t.startsWith("ZOOM")) return "view-transition";
       return "none";
     }
+
+    private static String templateHeaderHtml(Deck deck) {
+      String template = deck.meta.get("template");
+      String company = deck.meta.get("companyName");
+      String leftLogo = deck.meta.get("institutionLogo");
+      String rightLogo = deck.meta.get("companyLogo");
+      String fontFamily = deck.meta.get("fontFamily");
+
+      boolean enabled = (template != null && template.toLowerCase().contains("template"))
+          || (company != null && !company.trim().isEmpty())
+          || (leftLogo != null && !leftLogo.trim().isEmpty())
+          || (rightLogo != null && !rightLogo.trim().isEmpty());
+      if (!enabled)
+        return null;
+
+      StringBuilder out = new StringBuilder();
+      if (fontFamily != null && !fontFamily.trim().isEmpty()) {
+        out.append("<style>.slidev-layout{font-family:")
+            .append(escapeAttr(fontFamily.trim()))
+            .append(";}</style>\n");
+      }
+
+      out.append("<div class=\"sdeck-template-header\">\n");
+      out.append("  <div class=\"sdeck-template-left\">\n");
+      if (leftLogo != null && !leftLogo.trim().isEmpty()) {
+        out.append("    <img src=\"").append(escapeAttr(leftLogo.trim())).append("\" alt=\"Institution logo\" />\n");
+      }
+      if (company != null && !company.trim().isEmpty()) {
+        out.append("    <div class=\"sdeck-company-name\" style=\"color:var(--sdeck-primary);\">")
+            .append(escapeAttr(company.trim()))
+            .append("</div>\n");
+      }
+      out.append("  </div>\n");
+      out.append("  <div class=\"sdeck-template-right\">\n");
+      if (rightLogo != null && !rightLogo.trim().isEmpty()) {
+        out.append("    <img src=\"").append(escapeAttr(rightLogo.trim())).append("\" alt=\"Company logo\" />\n");
+      }
+      out.append("  </div>\n");
+      out.append("</div>\n");
+      return out.toString();
+    }
   }
 
   private static String intervalClickBlock(int startAt, Integer hideAt, String inner) {
     if (inner == null || inner.trim().isEmpty())
       return "";
     if (hideAt == null) {
-      return "<v-click at=\"" + startAt + "\">\n" + inner + "\n</v-click>";
+      return "<div v-click=\"" + startAt + "\">\n" + inner + "\n</div>";
     }
-    return "<v-click at=\"" + startAt + "\">\n"
-        + "<v-click at=\"" + hideAt + "\" hide>\n"
+    return "<div v-click=\"" + startAt + "\">\n"
+        + "<div v-click-hide=\"" + hideAt + "\">\n"
         + inner + "\n"
-        + "</v-click>\n"
-        + "</v-click>";
+        + "</div>\n"
+        + "</div>";
   }
 
   private static String yamlString(String s) {
@@ -1221,5 +1451,72 @@ public final class BnfCompiler {
     String[] ls = s.split("\n", -1);
     for (String l : ls) out.add(l);
     return out;
+  }
+
+  private static final class LineWithOpts {
+    final String base;
+    final Map<String, String> opts;
+
+    LineWithOpts(String base, Map<String, String> opts) {
+      this.base = base;
+      this.opts = opts;
+    }
+
+    static LineWithOpts parse(String line) {
+      if (line == null)
+        return new LineWithOpts("", new HashMap<>());
+
+      // Only treat trailing "{...}" as opts when it ends the line.
+      int end = line.lastIndexOf('}');
+      if (end != line.length() - 1)
+        return new LineWithOpts(line, new HashMap<>());
+      int start = line.lastIndexOf('{');
+      if (start < 0 || start > end)
+        return new LineWithOpts(line, new HashMap<>());
+
+      String inside = line.substring(start + 1, end).trim();
+      if (inside.isEmpty())
+        return new LineWithOpts(line.substring(0, start), new HashMap<>());
+
+      Map<String, String> out = new HashMap<>();
+
+      // Tokenize respecting quotes, allowing `k=v` separated by spaces.
+      List<String> tokens = new ArrayList<>();
+      StringBuilder cur = new StringBuilder();
+      boolean inQuotes = false;
+      for (int i = 0; i < inside.length(); i++) {
+        char ch = inside.charAt(i);
+        if (ch == '"') {
+          inQuotes = !inQuotes;
+          cur.append(ch);
+          continue;
+        }
+        if (!inQuotes && Character.isWhitespace(ch)) {
+          if (cur.length() > 0) {
+            tokens.add(cur.toString());
+            cur.setLength(0);
+          }
+          continue;
+        }
+        cur.append(ch);
+      }
+      if (cur.length() > 0) tokens.add(cur.toString());
+
+      for (String tok : tokens) {
+        int eq = tok.indexOf('=');
+        if (eq < 0) {
+          // bare token (e.g. "controls") -> treat as boolean flag
+          String k = tok.trim();
+          if (!k.isEmpty())
+            out.put(k, "true");
+        } else {
+          String k = tok.substring(0, eq).trim();
+          String v = stripQuotes(tok.substring(eq + 1).trim());
+          out.put(k, v);
+        }
+      }
+
+      return new LineWithOpts(line.substring(0, start), out);
+    }
   }
 }

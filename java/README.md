@@ -29,6 +29,16 @@ From `slidev-test/demo-project/-demo`:
 - Start Slidev: `npm run dev`
 - Replace the Slidev project’s `slidev-test/demo-project/-demo/slides.md` with the generated one (copy from `slides.md` at the repo root).
 
+## Offline export (web presentation)
+
+In a Slidev project folder (example: `slidev-test/demo-project/-demo`):
+- Build static site: `npx slidev build slides.md --base ./`
+- Open offline: `dist/index.html`
+
+## Scenario decks
+- Scenario 1 (apprenticeship): `examples/scenario1-apprenticeship.deck`
+- Scenario 2 (python intro): `examples/scenario2-python-intro.deck`
+
 ### Python live coding (REMOTE runner)
 - Start the local Python runner: `python tools/python-runner/server.py`
 - Ensure your Slidev project has `setup/code-runners.ts` (example: `slidev-test/demo-project/-demo/setup/code-runners.ts`)

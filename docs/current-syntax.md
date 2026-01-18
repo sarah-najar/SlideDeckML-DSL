@@ -17,6 +17,29 @@ theme: "default"
 
 Everything inside `@deck` becomes Slidev **headmatter** (YAML at the very top of `slides.md`).
 
+### Company template helper (for the lab scenarios)
+
+If you provide any of these keys, the compiler injects a simple header on every slide:
+- `template: "company-template"` *(any value containing `template` works)*
+- `companyName: "..."` *(text in header)*
+- `institutionLogo: "/institution-logo.svg"` *(left logo)*
+- `companyLogo: "/company-logo.svg"` *(right logo)*
+- `primaryColor: "#RRGGBB"` *(CSS variable `--sdeck-primary`)*
+- `fontFamily: "..."` *(applies to `.slidev-layout`)*
+
+Example:
+
+```text
+@deck
+title: "Apprenticeship Report"
+companyName: "Company Name"
+institutionLogo: "/institution-logo.svg"
+companyLogo: "/company-logo.svg"
+primaryColor: "#3b82f6"
+fontFamily: "Inter, Segoe UI, Arial, sans-serif"
+@enddeck
+```
+
 ## 2) Slides
 
 Each slide starts with `@slide` and ends with `@endslide`:
@@ -48,12 +71,26 @@ This compiles to Slidev `<v-click at="N"> ... </v-click>`.
 
 Image:
 ```text
-@1 ![Alt text](./public/logo.png) {fit=COVER}
+@1 ![Alt text](/company-logo.svg) {fit=COVER}
 ```
 
 Video:
 ```text
 @1 !video(./public/demo.mp4) {controls muted loop}
+```
+
+### Optional positioning + animation (images/videos)
+
+For `![...](...)` and `!video(...)` lines you can add extra options:
+- `x`, `y`, `w`, `h` (numbers)
+- `unit=PERCENT|PX` (default: `PERCENT`)
+- `anchor=TOP_LEFT|TOP_CENTER|TOP_RIGHT|CENTER_LEFT|CENTER|CENTER_RIGHT|BOTTOM_LEFT|BOTTOM_CENTER|BOTTOM_RIGHT`
+- `animate=FADE_IN|SLIDE_UP|ZOOM_IN|NONE`
+
+Example:
+
+```text
+@1 ![Work site](/site-photo.svg) {fit=COVER x=50 y=62 w=92 h=58 unit=PERCENT anchor=CENTER animate=ZOOM_IN}
 ```
 
 ## 5) Slots + variants
